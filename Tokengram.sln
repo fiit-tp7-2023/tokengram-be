@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tokengram-backend", "tokengram-backend.csproj", "{4A0EB74E-EC61-4BC5-8857-F3AE7951D13E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tokengram", "Tokengram.csproj", "{4A0EB74E-EC61-4BC5-8857-F3AE7951D13E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

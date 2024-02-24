@@ -1,7 +1,7 @@
 using SYSTEM_JSON = System.Text.Json.Serialization;
 using Newtonsoft.Json;
 
-namespace TAG.Database.Nodes
+namespace Tokengram.Database.Neo4j.Nodes
 {
     public class NFTNode
     {

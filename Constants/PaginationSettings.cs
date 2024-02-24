@@ -1,4 +1,4 @@
-namespace TAG.Constants
+namespace Tokengram.Constants
 {
     public static class PaginationSettings
     {

@@ -9,7 +9,7 @@
     }
   },
   "profiles": {
-    "TAG": {
+    "Tokengram": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,

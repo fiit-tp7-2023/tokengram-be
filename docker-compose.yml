@@ -1,0 +1,22 @@
+version: '1.0'
+
+networks:
+  team07:
+    external: true
+
+services:
+  tokengram-backend:
+    build: .
+    container_name: tokengram-backend
+    image: tokengram-backend
+    restart: unless-stopped
+    ports:
+      - 5000:5000
+    networks:
+      - team07
+    volumes:
+      - tokengram-backend_keys:/etc/team07/tokengram/backend/data-protection-keys
+
+volumes:
+  tokengram-backend_keys:
+    name: tokengram-backend_keys

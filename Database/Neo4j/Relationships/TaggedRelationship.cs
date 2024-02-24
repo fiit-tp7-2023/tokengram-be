@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace TAG.Database.Relationships
+namespace Tokengram.Database.Neo4j.Relationships
 {
     public class TaggedRelationship
     {

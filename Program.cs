@@ -1,4 +1,3 @@
-
 using FluentValidation.AspNetCore;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -9,8 +8,15 @@ using Microsoft.OpenApi.Models;
 using Neo4jClient;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using Tokengram.Services.Interfaces;
+using Tokengram.Services;
+using Tokengram.Database.Postgres;
+using Microsoft.EntityFrameworkCore;
+using Tokengram.Models.Config;
+using System.Text;
+using Tokengram.Middlewares;
 
-namespace tokengram_backend
+namespace Tokengram
 {
     public class Program
     {
@@ -25,7 +31,15 @@ namespace tokengram_backend
             );
             builder.Configuration.AddEnvironmentVariables();
 
+            // Db context configuration
+            builder.Services.AddDbContext<TokengramDbContext>(
+                options => options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresDatabase"))
+            );
+
             // Services configuration
+            var jwtOptionsSection = builder.Configuration.GetRequiredSection("JWT");
+            builder.Services.Configure<JWTOptions>(jwtOptionsSection);
+
             if (builder.Environment.IsProduction() && builder.Configuration["DeploymentEnv"] != "AZURE")
             {
                 builder.Services
@@ -43,6 +57,7 @@ namespace tokengram_backend
             });
 
             // Add services to the container.
+            builder.Services.AddScoped<IAuthService, AuthService>();
 
             builder.Services.AddControllers();
 
@@ -89,8 +104,6 @@ namespace tokengram_backend
             builder.Services.AddFluentValidationAutoValidation();
             builder.Services.AddFluentValidationClientsideAdapters();
 
-            var googleClientId = builder.Configuration["Google:ClientId"];
-
             builder.Services
                 .AddAuthentication(x =>
                 {
@@ -100,17 +113,17 @@ namespace tokengram_backend
                 })
                 .AddJwtBearer(x =>
                 {
-                    x.Authority = "https://accounts.google.com";
-                    x.Audience = googleClientId;
-
+                    x.SaveToken = true;
                     x.TokenValidationParameters = new TokenValidationParameters
                     {
+                        ValidateAudience = false,
                         ValidateIssuer = true,
-                        ValidIssuer = "https://accounts.google.com",
-                        ValidateAudience = true,
-                        ValidAudience = googleClientId,
-                        ValidateLifetime = true,
+                        ValidIssuer = jwtOptionsSection["ValidIssuer"],
                         ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.ASCII.GetBytes(jwtOptionsSection["Secret"]!)
+                        ),
+                        ValidateLifetime = true,
                     };
                 });
 
@@ -134,8 +147,9 @@ namespace tokengram_backend
 
             app.UseAuthorization();
 
-
             app.MapControllers();
+
+            app.UseMiddleware<ExceptionHandlerMiddleware>();
 
             app.Run();
         }

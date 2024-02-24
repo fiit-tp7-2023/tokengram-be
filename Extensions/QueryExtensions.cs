@@ -1,6 +1,6 @@
 using Neo4jClient.Cypher;
 
-namespace TAG.Extensions
+namespace Tokengram.Extensions
 {
     public static class QueryExtensions
     {
