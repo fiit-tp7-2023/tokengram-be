@@ -17,5 +17,7 @@ namespace Tokengram.Constants
         public const string REFRESH_TOKEN_INVALID = "Refresh token is invalid.";
 
         public const string REFRESH_TOKEN_EXPIRED = "Refresh token expired.";
+
+        public const string REFRESH_TOKEN_BLACKLISTED = "Refresh token was already used.";
     }
 }

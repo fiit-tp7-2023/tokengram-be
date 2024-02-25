@@ -72,14 +72,22 @@ namespace Tokengram.Services
 
         public async Task<TokensResponseDTO> RefreshToken(RefreshTokenRequestDTO request)
         {
-            var user =
-                await _dbContext.Users.FirstOrDefaultAsync(x => x.RefreshToken == request.RefreshToken)
+            var refreshToken =
+                await _dbContext.RefreshTokens
+                    .Include(x => x.User)
+                    .FirstOrDefaultAsync(x => x.Token == request.RefreshToken)
                 ?? throw new BadRequestException(ErrorMessages.REFRESH_TOKEN_INVALID);
 
-            if (user.RefreshTokenExpiryTime < DateTime.Now)
+            if (refreshToken.ExpiresAt < DateTime.Now)
                 throw new BadRequestException(ErrorMessages.REFRESH_TOKEN_EXPIRED);
 
-            return GenerateTokens(user);
+            if (refreshToken.BlackListedAt != null)
+                throw new BadRequestException(ErrorMessages.REFRESH_TOKEN_BLACKLISTED);
+
+            refreshToken.BlackListedAt = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync();
+
+            return GenerateTokens(refreshToken.User);
         }
 
         private TokensResponseDTO GenerateTokens(User user)
@@ -93,11 +101,17 @@ namespace Tokengram.Services
 
         private string GenerateRefreshToken(User user)
         {
-            user.RefreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenValidityInDays);
+            RefreshToken refreshToken =
+                new()
+                {
+                    UserId = user.Id,
+                    Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
+                    ExpiresAt = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenValidityInDays)
+                };
+            _dbContext.Add(refreshToken);
             _dbContext.SaveChanges();
 
-            return user.RefreshToken;
+            return refreshToken.Token;
         }
 
         private string GenerateAccessToken(User user)
@@ -106,7 +120,7 @@ namespace Tokengram.Services
 
             Claim[] claims = new Claim[]
             {
-                new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new(ClaimTypes.Actor, user.PublicAddress),
             };
 

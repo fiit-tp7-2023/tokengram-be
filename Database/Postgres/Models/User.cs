@@ -20,11 +20,7 @@ namespace Tokengram.Database.Postgres.Models
         [Column("nonce")]
         public Guid Nonce { get; set; }
 
-        [Column("refresh_token")]
-        public string? RefreshToken { get; set; }
-
-        [Column("refresh_token_expiry_time")]
-        public DateTime RefreshTokenExpiryTime { get; set; }
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 
         public string GetNonceMessage()
         {

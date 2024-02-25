@@ -7,7 +7,7 @@ namespace Tokengram.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class AuthController : TokengramBaseController
+    public class AuthController : BaseController
     {
         private readonly IAuthService _authService;
 

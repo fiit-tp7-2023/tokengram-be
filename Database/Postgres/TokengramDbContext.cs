@@ -9,5 +9,7 @@ namespace Tokengram.Database.Postgres
             : base(options) { }
 
         public DbSet<User> Users { get; set; }
+
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
     }
 }
