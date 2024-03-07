@@ -4,6 +4,8 @@ namespace Tokengram.Extensions
 {
     public static class QueryExtensions
     {
+        // Neo4j
+
         public static async Task<T?> FirstOrDefaultAsync<T>(this ICypherFluentQuery<T> queryable)
         {
             var results = await queryable.Limit(1).ResultsAsync;
@@ -64,6 +66,13 @@ namespace Tokengram.Extensions
             string orderByClause = string.Join(", ", properties.Select(property => $"elementId({property})"));
 
             return descending ? queryable.OrderByDescending(orderByClause) : queryable.OrderBy(orderByClause);
+        }
+
+        // Postgres - EF
+
+        public static IQueryable<T> Paginate<T>(this IQueryable<T> queryable, int pageNumber, int pageSize)
+        {
+            return queryable.Skip((pageNumber - 1) * pageSize).Take(pageSize);
         }
     }
 }
