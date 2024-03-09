@@ -1,4 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -8,13 +7,14 @@ using Nethereum.Signer;
 using Nethereum.Util;
 using Tokengram.Models.Config;
 using Tokengram.Database.Postgres;
-using Tokengram.Database.Postgres.Models;
-using Tokengram.DTOS.Requests;
-using Tokengram.DTOS.Responses;
+using Tokengram.Database.Postgres.Entities;
+using Tokengram.Models.DTOS.HTTP.Requests;
+using Tokengram.Models.DTOS.HTTP.Responses;
 using Tokengram.Services.Interfaces;
 using Tokengram.Models.Exceptions;
 using Microsoft.Extensions.Options;
 using Tokengram.Constants;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Tokengram.Services
 {
@@ -31,24 +31,24 @@ namespace Tokengram.Services
             _jwtOptions = jWTOptions.Value;
         }
 
-        public async Task<string> GenerateNonceMessage(NonceRequestDTO request)
+        public async Task<NonceMessageResponseDTO> GenerateNonceMessage(NonceRequestDTO request)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.PublicAddress == request.PublicAddress);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Address == request.Address);
 
             if (user != null)
-                return user.GetNonceMessage();
+                return new NonceMessageResponseDTO { Message = user.GetNonceMessage() };
 
-            user = new User { PublicAddress = request.PublicAddress, Nonce = Guid.NewGuid() };
+            user = new User { Address = request.Address, Nonce = Guid.NewGuid() };
             await _dbContext.Users.AddAsync(user);
             await _dbContext.SaveChangesAsync();
 
-            return user.GetNonceMessage();
+            return new NonceMessageResponseDTO { Message = user.GetNonceMessage() };
         }
 
         public async Task<TokensResponseDTO> Login(LoginRequestDTO request)
         {
             var user =
-                await _dbContext.Users.FirstOrDefaultAsync(x => x.PublicAddress == request.PublicAddress)
+                await _dbContext.Users.FirstOrDefaultAsync(x => x.Address == request.Address)
                 ?? throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
             var signerAddress = "";
 
@@ -61,7 +61,7 @@ namespace Tokengram.Services
                 throw new BadRequestException(ErrorMessages.SIGNATURE_INVALID);
             }
 
-            if (!AddressUtil.Current.AreAddressesTheSame(user.PublicAddress, signerAddress))
+            if (!AddressUtil.Current.AreAddressesTheSame(user.Address, signerAddress))
                 throw new BadRequestException(ErrorMessages.SIGNATURE_INVALID);
 
             var x = user.Nonce = Guid.NewGuid();
@@ -104,7 +104,7 @@ namespace Tokengram.Services
             RefreshToken refreshToken =
                 new()
                 {
-                    UserId = user.Id,
+                    UserAddress = user.Address,
                     Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
                     ExpiresAt = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenValidityInDays)
                 };
@@ -118,11 +118,7 @@ namespace Tokengram.Services
         {
             byte[] key = Encoding.ASCII.GetBytes(_jwtOptions.Secret);
 
-            Claim[] claims = new Claim[]
-            {
-                new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new(ClaimTypes.Actor, user.PublicAddress),
-            };
+            Claim[] claims = new Claim[] { new(ClaimTypes.NameIdentifier, user.Address), };
 
             SecurityTokenDescriptor tokenDescriptor =
                 new()

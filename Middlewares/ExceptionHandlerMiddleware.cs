@@ -1,5 +1,5 @@
 using System.Net;
-using Tokengram.DTOS.Responses;
+using Tokengram.Models.DTOS.HTTP.Responses;
 using Tokengram.Constants;
 using Tokengram.Models.Exceptions;
 using FluentValidation;

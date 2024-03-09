@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Tokengram.DTOS.Requests;
-using Tokengram.DTOS.Responses;
+using Tokengram.Models.DTOS.HTTP.Requests;
+using Tokengram.Models.DTOS.HTTP.Responses;
 using Tokengram.Services.Interfaces;
 
 namespace Tokengram.Controllers

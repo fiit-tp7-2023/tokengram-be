@@ -15,6 +15,10 @@ using Microsoft.EntityFrameworkCore;
 using Tokengram.Models.Config;
 using System.Text;
 using Tokengram.Middlewares;
+using Tokengram.Hubs;
+using Tokengram.Models.Hubs;
+using Tokengram.Models.Mappings;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Tokengram
 {
@@ -57,9 +61,21 @@ namespace Tokengram
             });
 
             // Add services to the container.
+            builder.Services.AddAutoMapper(typeof(ChatInvitationProfile));
+            builder.Services.AddAutoMapper(typeof(ChatMessageProfile));
+            builder.Services.AddAutoMapper(typeof(ChatProfile));
+            builder.Services.AddAutoMapper(typeof(UserProfile));
+
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IChatService, ChatService>();
+            builder.Services.AddSingleton<List<ConnectedUser>>();
+            builder.Services.AddSingleton<List<ChatGroup>>();
 
             builder.Services.AddControllers();
+            builder.Services.AddSignalR(options =>
+            {
+                options.AddFilter<ValidationHubFilter>();
+            });
 
             var neo4jUri = builder.Configuration["Neo4j:Uri"];
             var neo4jUsername = builder.Configuration["Neo4j:Username"];
@@ -148,6 +164,14 @@ namespace Tokengram
             app.UseAuthorization();
 
             app.MapControllers();
+
+            app.MapHub<ChatHub>(
+                "/hubs/chat",
+                options =>
+                {
+                    options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets;
+                }
+            );
 
             app.UseMiddleware<ExceptionHandlerMiddleware>();
 
