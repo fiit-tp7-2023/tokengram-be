@@ -64,17 +64,56 @@ namespace Tokengram.Database.Postgres
                 e.HasIndex(x => x.Username).IsUnique();
                 e.HasIndex(x => x.Nonce).IsUnique();
 
-                e.HasMany(x => x.RefreshTokens).WithOne(x => x.User).HasForeignKey(x => x.UserAddress);
-                e.HasMany(x => x.SentChatMessages).WithOne(x => x.Sender).HasForeignKey(x => x.SenderAddress);
-                e.HasMany(x => x.ReceivedChatInvitations).WithOne(x => x.User).HasForeignKey(x => x.UserAddress);
-                e.HasMany(x => x.ManagedChats).WithOne(x => x.Admin).HasForeignKey(x => x.AdminAddress);
-                e.HasMany(x => x.SentChatInvitations).WithOne(x => x.Sender).HasForeignKey(x => x.SenderAddress);
+                e.HasMany(x => x.RefreshTokens)
+                    .WithOne(x => x.User)
+                    .HasForeignKey(x => x.UserAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasMany(x => x.SentChatMessages)
+                    .WithOne(x => x.Sender)
+                    .HasForeignKey(x => x.SenderAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasMany(x => x.ReceivedChatInvitations)
+                    .WithOne(x => x.User)
+                    .HasForeignKey(x => x.UserAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasMany(x => x.ManagedChats)
+                    .WithOne(x => x.Admin)
+                    .HasForeignKey(x => x.AdminAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasMany(x => x.SentChatInvitations)
+                    .WithOne(x => x.Sender)
+                    .HasForeignKey(x => x.SenderAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
                 e.HasMany(x => x.Chats)
                     .WithMany(x => x.Users)
                     .UsingEntity<ChatInvitation>(
-                        l => l.HasOne<Chat>().WithMany(e => e.ChatInvitations).HasForeignKey(e => e.ChatId),
-                        r => r.HasOne<User>().WithMany(e => e.ReceivedChatInvitations).HasForeignKey(e => e.UserAddress)
+                        l =>
+                            l.HasOne<Chat>()
+                                .WithMany(e => e.ChatInvitations)
+                                .HasForeignKey(e => e.ChatId)
+                                .OnDelete(DeleteBehavior.Cascade),
+                        r =>
+                            r.HasOne<User>()
+                                .WithMany(e => e.ReceivedChatInvitations)
+                                .HasForeignKey(e => e.UserAddress)
+                                .OnDelete(DeleteBehavior.Cascade)
                     );
+                e.HasMany(x => x.Posts)
+                    .WithOne(x => x.Owner)
+                    .HasForeignKey(x => x.OwnerAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasMany(x => x.Comments)
+                    .WithOne(x => x.Commenter)
+                    .HasForeignKey(x => x.CommenterAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasMany(x => x.CommentLikes)
+                    .WithOne(x => x.Liker)
+                    .HasForeignKey(x => x.LikerAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasMany(x => x.PostLikes)
+                    .WithOne(x => x.Liker)
+                    .HasForeignKey(x => x.LikerAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<RefreshToken>(e =>
@@ -91,7 +130,10 @@ namespace Tokengram.Database.Postgres
 
                 e.HasIndex(x => x.Token).IsUnique();
 
-                e.HasOne(x => x.User).WithMany(x => x.RefreshTokens).HasForeignKey(x => x.UserAddress);
+                e.HasOne(x => x.User)
+                    .WithMany(x => x.RefreshTokens)
+                    .HasForeignKey(x => x.UserAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<Chat>(e =>
@@ -105,15 +147,31 @@ namespace Tokengram.Database.Postgres
 
                 e.HasKey(x => x.Id);
 
-                e.HasOne(x => x.Admin).WithMany(x => x.ManagedChats).HasForeignKey(x => x.AdminAddress);
-                e.HasMany(x => x.ChatInvitations).WithOne(x => x.Chat).HasForeignKey(x => x.ChatId);
-                e.HasMany(x => x.ChatMessages).WithOne(x => x.Chat).HasForeignKey(x => x.ChatId);
+                e.HasOne(x => x.Admin)
+                    .WithMany(x => x.ManagedChats)
+                    .HasForeignKey(x => x.AdminAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasMany(x => x.ChatInvitations)
+                    .WithOne(x => x.Chat)
+                    .HasForeignKey(x => x.ChatId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasMany(x => x.ChatMessages)
+                    .WithOne(x => x.Chat)
+                    .HasForeignKey(x => x.ChatId)
+                    .OnDelete(DeleteBehavior.Cascade);
                 e.HasMany(x => x.Users)
                     .WithMany(x => x.Chats)
                     .UsingEntity<ChatInvitation>(
                         l =>
-                            l.HasOne<User>().WithMany(e => e.ReceivedChatInvitations).HasForeignKey(e => e.UserAddress),
-                        r => r.HasOne<Chat>().WithMany(e => e.ChatInvitations).HasForeignKey(e => e.ChatId)
+                            l.HasOne<User>()
+                                .WithMany(e => e.ReceivedChatInvitations)
+                                .HasForeignKey(e => e.UserAddress)
+                                .OnDelete(DeleteBehavior.Cascade),
+                        r =>
+                            r.HasOne<Chat>()
+                                .WithMany(e => e.ChatInvitations)
+                                .HasForeignKey(e => e.ChatId)
+                                .OnDelete(DeleteBehavior.Cascade)
                     );
             });
 
@@ -148,16 +206,122 @@ namespace Tokengram.Database.Postgres
 
                 e.HasKey(x => x.Id);
 
-                e.HasOne(x => x.Sender).WithMany(x => x.SentChatMessages).HasForeignKey(x => x.SenderAddress);
-                e.HasOne(x => x.Chat).WithMany(x => x.ChatMessages).HasForeignKey(x => x.ChatId);
+                e.HasOne(x => x.Sender)
+                    .WithMany(x => x.SentChatMessages)
+                    .HasForeignKey(x => x.SenderAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.Chat)
+                    .WithMany(x => x.ChatMessages)
+                    .HasForeignKey(x => x.ChatId)
+                    .OnDelete(DeleteBehavior.Cascade);
                 e.HasOne(x => x.ParentMessage)
                     .WithMany(x => x.MessageReplies)
                     .HasForeignKey(x => x.ParentMessageId)
-                    .OnDelete(DeleteBehavior.SetNull);
+                    .OnDelete(DeleteBehavior.Cascade);
                 e.HasMany(x => x.MessageReplies)
                     .WithOne(x => x.ParentMessage)
                     .HasForeignKey(x => x.ParentMessageId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Post>(e =>
+            {
+                e.ToTable("posts");
+
+                e.Property(x => x.Id).HasColumnName("id").UseIdentityAlwaysColumn();
+                e.Property(x => x.NftAddress).HasColumnName("nft_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.OwnerAddress).HasColumnName("owner_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.LikeCount).HasColumnName("like_count").HasDefaultValue(0);
+                e.Property(x => x.IsVisible).HasColumnName("is_visible").HasDefaultValue(false);
+
+                e.HasKey(x => x.Id);
+
+                e.HasOne(x => x.Owner)
+                    .WithMany(x => x.Posts)
+                    .HasForeignKey(x => x.OwnerAddress)
                     .OnDelete(DeleteBehavior.SetNull);
+                e.HasMany(x => x.Comments)
+                    .WithOne(x => x.Post)
+                    .HasForeignKey(x => x.PostId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasMany(x => x.Likes)
+                    .WithOne(x => x.Post)
+                    .HasForeignKey(x => x.PostId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Comment>(e =>
+            {
+                e.ToTable("comments");
+
+                e.Property(x => x.Id).HasColumnName("id").UseIdentityAlwaysColumn();
+                e.Property(x => x.CommenterAddress).HasColumnName("commenter_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.PostId).HasColumnName("post_id");
+                e.Property(x => x.ParentCommentId).HasColumnName("parent_comment_id");
+                e.Property(x => x.LikeCount).HasColumnName("like_count").HasDefaultValue(0);
+
+                e.HasKey(x => x.Id);
+
+                e.HasOne(x => x.Commenter)
+                    .WithMany(x => x.Comments)
+                    .HasForeignKey(x => x.CommenterAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.Post)
+                    .WithMany(x => x.Comments)
+                    .HasForeignKey(x => x.PostId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.ParentComment)
+                    .WithMany(x => x.CommentReplies)
+                    .HasForeignKey(x => x.ParentCommentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasMany(x => x.Likes)
+                    .WithOne(x => x.Comment)
+                    .HasForeignKey(x => x.CommentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasMany(x => x.CommentReplies)
+                    .WithOne(x => x.ParentComment)
+                    .HasForeignKey(x => x.ParentCommentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<PostLike>(e =>
+            {
+                e.ToTable("post_likes");
+
+                e.Property(x => x.Id).HasColumnName("id").UseIdentityAlwaysColumn();
+                e.Property(x => x.LikerAddress).HasColumnName("liker_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.PostId).HasColumnName("post_id");
+
+                e.HasKey(x => x.Id);
+
+                e.HasOne(x => x.Liker)
+                    .WithMany(x => x.PostLikes)
+                    .HasForeignKey(x => x.LikerAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.Post)
+                    .WithMany(x => x.Likes)
+                    .HasForeignKey(x => x.PostId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<CommentLike>(e =>
+            {
+                e.ToTable("comment_likes");
+
+                e.Property(x => x.Id).HasColumnName("id").UseIdentityAlwaysColumn();
+                e.Property(x => x.LikerAddress).HasColumnName("liker_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.CommentId).HasColumnName("comment_id");
+
+                e.HasKey(x => x.Id);
+
+                e.HasOne(x => x.Liker)
+                    .WithMany(x => x.CommentLikes)
+                    .HasForeignKey(x => x.LikerAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.Comment)
+                    .WithMany(x => x.Likes)
+                    .HasForeignKey(x => x.CommentId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
 

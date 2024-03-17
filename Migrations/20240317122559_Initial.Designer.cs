@@ -12,7 +12,7 @@ using Tokengram.Database.Postgres;
 namespace Tokengram.Migrations
 {
     [DbContext(typeof(TokengramDbContext))]
-    [Migration("20240304221551_Initial")]
+    [Migration("20240317122559_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -149,6 +149,173 @@ namespace Tokengram.Migrations
                     b.ToTable("chat_messages", (string)null);
                 });
 
+            modelBuilder.Entity("Tokengram.Database.Postgres.Entities.Comment", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("CommenterAddress")
+                        .IsRequired()
+                        .HasMaxLength(42)
+                        .HasColumnType("character varying(42)")
+                        .HasColumnName("commenter_address");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("LikeCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("like_count");
+
+                    b.Property<long?>("ParentCommentId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("parent_comment_id");
+
+                    b.Property<long>("PostId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("post_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommenterAddress");
+
+                    b.HasIndex("ParentCommentId");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("comments", (string)null);
+                });
+
+            modelBuilder.Entity("Tokengram.Database.Postgres.Entities.CommentLike", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("CommentId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("comment_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("LikerAddress")
+                        .IsRequired()
+                        .HasMaxLength(42)
+                        .HasColumnType("character varying(42)")
+                        .HasColumnName("liker_address");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommentId");
+
+                    b.HasIndex("LikerAddress");
+
+                    b.ToTable("comment_likes", (string)null);
+                });
+
+            modelBuilder.Entity("Tokengram.Database.Postgres.Entities.Post", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<bool>("IsVisible")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_visible");
+
+                    b.Property<int>("LikeCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("like_count");
+
+                    b.Property<string>("NftAddress")
+                        .IsRequired()
+                        .HasMaxLength(42)
+                        .HasColumnType("character varying(42)")
+                        .HasColumnName("nft_address");
+
+                    b.Property<string>("OwnerAddress")
+                        .HasMaxLength(42)
+                        .HasColumnType("character varying(42)")
+                        .HasColumnName("owner_address");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerAddress");
+
+                    b.ToTable("posts", (string)null);
+                });
+
+            modelBuilder.Entity("Tokengram.Database.Postgres.Entities.PostLike", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("LikerAddress")
+                        .IsRequired()
+                        .HasMaxLength(42)
+                        .HasColumnType("character varying(42)")
+                        .HasColumnName("liker_address");
+
+                    b.Property<long>("PostId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("post_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LikerAddress");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("post_likes", (string)null);
+                });
+
             modelBuilder.Entity("Tokengram.Database.Postgres.Entities.RefreshToken", b =>
                 {
                     b.Property<long>("Id")
@@ -253,7 +420,8 @@ namespace Tokengram.Migrations
 
                     b.HasOne("Tokengram.Database.Postgres.Entities.User", "Sender")
                         .WithMany("SentChatInvitations")
-                        .HasForeignKey("SenderAddress");
+                        .HasForeignKey("SenderAddress")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Tokengram.Database.Postgres.Entities.User", "User")
                         .WithMany("ReceivedChatInvitations")
@@ -279,7 +447,7 @@ namespace Tokengram.Migrations
                     b.HasOne("Tokengram.Database.Postgres.Entities.ChatMessage", "ParentMessage")
                         .WithMany("MessageReplies")
                         .HasForeignKey("ParentMessageId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Tokengram.Database.Postgres.Entities.User", "Sender")
                         .WithMany("SentChatMessages")
@@ -292,6 +460,80 @@ namespace Tokengram.Migrations
                     b.Navigation("ParentMessage");
 
                     b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("Tokengram.Database.Postgres.Entities.Comment", b =>
+                {
+                    b.HasOne("Tokengram.Database.Postgres.Entities.User", "Commenter")
+                        .WithMany("Comments")
+                        .HasForeignKey("CommenterAddress")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Tokengram.Database.Postgres.Entities.Comment", "ParentComment")
+                        .WithMany("CommentReplies")
+                        .HasForeignKey("ParentCommentId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Tokengram.Database.Postgres.Entities.Post", "Post")
+                        .WithMany("Comments")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Commenter");
+
+                    b.Navigation("ParentComment");
+
+                    b.Navigation("Post");
+                });
+
+            modelBuilder.Entity("Tokengram.Database.Postgres.Entities.CommentLike", b =>
+                {
+                    b.HasOne("Tokengram.Database.Postgres.Entities.Comment", "Comment")
+                        .WithMany("Likes")
+                        .HasForeignKey("CommentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Tokengram.Database.Postgres.Entities.User", "Liker")
+                        .WithMany("CommentLikes")
+                        .HasForeignKey("LikerAddress")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Comment");
+
+                    b.Navigation("Liker");
+                });
+
+            modelBuilder.Entity("Tokengram.Database.Postgres.Entities.Post", b =>
+                {
+                    b.HasOne("Tokengram.Database.Postgres.Entities.User", "Owner")
+                        .WithMany("Posts")
+                        .HasForeignKey("OwnerAddress")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("Tokengram.Database.Postgres.Entities.PostLike", b =>
+                {
+                    b.HasOne("Tokengram.Database.Postgres.Entities.User", "Liker")
+                        .WithMany("PostLikes")
+                        .HasForeignKey("LikerAddress")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Tokengram.Database.Postgres.Entities.Post", "Post")
+                        .WithMany("Likes")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Liker");
+
+                    b.Navigation("Post");
                 });
 
             modelBuilder.Entity("Tokengram.Database.Postgres.Entities.RefreshToken", b =>
@@ -317,9 +559,31 @@ namespace Tokengram.Migrations
                     b.Navigation("MessageReplies");
                 });
 
+            modelBuilder.Entity("Tokengram.Database.Postgres.Entities.Comment", b =>
+                {
+                    b.Navigation("CommentReplies");
+
+                    b.Navigation("Likes");
+                });
+
+            modelBuilder.Entity("Tokengram.Database.Postgres.Entities.Post", b =>
+                {
+                    b.Navigation("Comments");
+
+                    b.Navigation("Likes");
+                });
+
             modelBuilder.Entity("Tokengram.Database.Postgres.Entities.User", b =>
                 {
+                    b.Navigation("CommentLikes");
+
+                    b.Navigation("Comments");
+
                     b.Navigation("ManagedChats");
+
+                    b.Navigation("PostLikes");
+
+                    b.Navigation("Posts");
 
                     b.Navigation("ReceivedChatInvitations");
 

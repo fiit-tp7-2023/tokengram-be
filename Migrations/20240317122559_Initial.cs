@@ -64,6 +64,45 @@ namespace Tokengram.Migrations
             );
 
             migrationBuilder.CreateTable(
+                name: "posts",
+                columns: table =>
+                    new
+                    {
+                        id = table
+                            .Column<long>(type: "bigint", nullable: false)
+                            .Annotation(
+                                "Npgsql:ValueGenerationStrategy",
+                                NpgsqlValueGenerationStrategy.IdentityAlwaysColumn
+                            ),
+                        nft_address = table.Column<string>(
+                            type: "character varying(42)",
+                            maxLength: 42,
+                            nullable: false
+                        ),
+                        owner_address = table.Column<string>(
+                            type: "character varying(42)",
+                            maxLength: 42,
+                            nullable: true
+                        ),
+                        like_count = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                        is_visible = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                        created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                        updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_posts", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_posts_users_owner_address",
+                        column: x => x.owner_address,
+                        principalTable: "users",
+                        principalColumn: "address",
+                        onDelete: ReferentialAction.SetNull
+                    );
+                }
+            );
+
+            migrationBuilder.CreateTable(
                 name: "refresh_tokens",
                 columns: table =>
                     new
@@ -132,7 +171,8 @@ namespace Tokengram.Migrations
                         name: "FK_chat_invitations_users_sender_address",
                         column: x => x.sender_address,
                         principalTable: "users",
-                        principalColumn: "address"
+                        principalColumn: "address",
+                        onDelete: ReferentialAction.Cascade
                     );
                     table.ForeignKey(
                         name: "FK_chat_invitations_users_user_address",
@@ -178,7 +218,7 @@ namespace Tokengram.Migrations
                         column: x => x.parent_message_id,
                         principalTable: "chat_messages",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.SetNull
+                        onDelete: ReferentialAction.Cascade
                     );
                     table.ForeignKey(
                         name: "FK_chat_messages_chats_chat_id",
@@ -196,6 +236,161 @@ namespace Tokengram.Migrations
                     );
                 }
             );
+
+            migrationBuilder.CreateTable(
+                name: "comments",
+                columns: table =>
+                    new
+                    {
+                        id = table
+                            .Column<long>(type: "bigint", nullable: false)
+                            .Annotation(
+                                "Npgsql:ValueGenerationStrategy",
+                                NpgsqlValueGenerationStrategy.IdentityAlwaysColumn
+                            ),
+                        commenter_address = table.Column<string>(
+                            type: "character varying(42)",
+                            maxLength: 42,
+                            nullable: false
+                        ),
+                        post_id = table.Column<long>(type: "bigint", nullable: false),
+                        parent_comment_id = table.Column<long>(type: "bigint", nullable: true),
+                        like_count = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                        created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                        updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_comments", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_comments_comments_parent_comment_id",
+                        column: x => x.parent_comment_id,
+                        principalTable: "comments",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade
+                    );
+                    table.ForeignKey(
+                        name: "FK_comments_posts_post_id",
+                        column: x => x.post_id,
+                        principalTable: "posts",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade
+                    );
+                    table.ForeignKey(
+                        name: "FK_comments_users_commenter_address",
+                        column: x => x.commenter_address,
+                        principalTable: "users",
+                        principalColumn: "address",
+                        onDelete: ReferentialAction.Cascade
+                    );
+                }
+            );
+
+            migrationBuilder.CreateTable(
+                name: "post_likes",
+                columns: table =>
+                    new
+                    {
+                        id = table
+                            .Column<long>(type: "bigint", nullable: false)
+                            .Annotation(
+                                "Npgsql:ValueGenerationStrategy",
+                                NpgsqlValueGenerationStrategy.IdentityAlwaysColumn
+                            ),
+                        liker_address = table.Column<string>(
+                            type: "character varying(42)",
+                            maxLength: 42,
+                            nullable: false
+                        ),
+                        post_id = table.Column<long>(type: "bigint", nullable: false),
+                        created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                        updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_post_likes", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_post_likes_posts_post_id",
+                        column: x => x.post_id,
+                        principalTable: "posts",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade
+                    );
+                    table.ForeignKey(
+                        name: "FK_post_likes_users_liker_address",
+                        column: x => x.liker_address,
+                        principalTable: "users",
+                        principalColumn: "address",
+                        onDelete: ReferentialAction.Cascade
+                    );
+                }
+            );
+
+            migrationBuilder.CreateTable(
+                name: "comment_likes",
+                columns: table =>
+                    new
+                    {
+                        id = table
+                            .Column<long>(type: "bigint", nullable: false)
+                            .Annotation(
+                                "Npgsql:ValueGenerationStrategy",
+                                NpgsqlValueGenerationStrategy.IdentityAlwaysColumn
+                            ),
+                        liker_address = table.Column<string>(
+                            type: "character varying(42)",
+                            maxLength: 42,
+                            nullable: false
+                        ),
+                        comment_id = table.Column<long>(type: "bigint", nullable: false),
+                        created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                        updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_comment_likes", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_comment_likes_comments_comment_id",
+                        column: x => x.comment_id,
+                        principalTable: "comments",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade
+                    );
+                    table.ForeignKey(
+                        name: "FK_comment_likes_users_liker_address",
+                        column: x => x.liker_address,
+                        principalTable: "users",
+                        principalColumn: "address",
+                        onDelete: ReferentialAction.Cascade
+                    );
+                }
+            );
+
+            migrationBuilder.CreateIndex(
+                name: "IX_comment_likes_comment_id",
+                table: "comment_likes",
+                column: "comment_id"
+            );
+
+            migrationBuilder.CreateIndex(
+                name: "IX_comment_likes_liker_address",
+                table: "comment_likes",
+                column: "liker_address"
+            );
+
+            migrationBuilder.CreateIndex(
+                name: "IX_comments_commenter_address",
+                table: "comments",
+                column: "commenter_address"
+            );
+
+            migrationBuilder.CreateIndex(
+                name: "IX_comments_parent_comment_id",
+                table: "comments",
+                column: "parent_comment_id"
+            );
+
+            migrationBuilder.CreateIndex(name: "IX_comments_post_id", table: "comments", column: "post_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_chat_invitations_sender_address",
@@ -226,6 +421,16 @@ namespace Tokengram.Migrations
             migrationBuilder.CreateIndex(name: "IX_chats_admin_address", table: "chats", column: "admin_address");
 
             migrationBuilder.CreateIndex(
+                name: "IX_post_likes_liker_address",
+                table: "post_likes",
+                column: "liker_address"
+            );
+
+            migrationBuilder.CreateIndex(name: "IX_post_likes_post_id", table: "post_likes", column: "post_id");
+
+            migrationBuilder.CreateIndex(name: "IX_posts_owner_address", table: "posts", column: "owner_address");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_refresh_tokens_token",
                 table: "refresh_tokens",
                 column: "token",
@@ -246,13 +451,21 @@ namespace Tokengram.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(name: "comment_likes");
+
             migrationBuilder.DropTable(name: "chat_invitations");
 
             migrationBuilder.DropTable(name: "chat_messages");
 
+            migrationBuilder.DropTable(name: "post_likes");
+
             migrationBuilder.DropTable(name: "refresh_tokens");
 
+            migrationBuilder.DropTable(name: "comments");
+
             migrationBuilder.DropTable(name: "chats");
+
+            migrationBuilder.DropTable(name: "posts");
 
             migrationBuilder.DropTable(name: "users");
         }
