@@ -20,6 +20,14 @@ namespace Tokengram.Database.Postgres.Entities
 
         public ICollection<Chat> Chats { get; set; } = new List<Chat>();
 
+        public ICollection<Post> Posts { get; set; } = new List<Post>();
+
+        public ICollection<Comment> Comments { get; set; } = new List<Comment>();
+
+        public ICollection<CommentLike> CommentLikes { get; set; } = new List<CommentLike>();
+
+        public ICollection<PostLike> PostLikes { get; set; } = new List<PostLike>();
+
         public string GetNonceMessage()
         {
             return $"Tokengram authentication\n\nNonce - {Nonce}\n\nSign this message to authenticate your account. This nonce is unique to this authentication request and helps ensure the security of your account.";
