@@ -8,6 +8,8 @@ namespace Tokengram.Database.Tokengram.Entities
 
         public Guid Nonce { get; set; }
 
+        public string? ProfilePicturePath { get; set; }
+
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 
         public ICollection<ChatMessage> SentChatMessages { get; set; } = new List<ChatMessage>();

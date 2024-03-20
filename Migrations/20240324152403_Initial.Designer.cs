@@ -12,7 +12,7 @@ using Tokengram.Database.Tokengram;
 namespace Tokengram.Migrations
 {
     [DbContext(typeof(TokengramDbContext))]
-    [Migration("20240323151445_Initial")]
+    [Migration("20240324152403_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -428,6 +428,10 @@ namespace Tokengram.Migrations
                         .HasMaxLength(36)
                         .HasColumnType("uuid")
                         .HasColumnName("nonce");
+
+                    b.Property<string>("ProfilePicturePath")
+                        .HasColumnType("text")
+                        .HasColumnName("profile_picture_path");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")

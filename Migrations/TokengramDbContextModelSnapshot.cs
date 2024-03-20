@@ -426,6 +426,10 @@ namespace Tokengram.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("nonce");
 
+                    b.Property<string>("ProfilePicturePath")
+                        .HasColumnType("text")
+                        .HasColumnName("profile_picture_path");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
