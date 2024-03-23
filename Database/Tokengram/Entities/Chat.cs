@@ -1,6 +1,6 @@
 using Tokengram.Enums;
 
-namespace Tokengram.Database.Postgres.Entities
+namespace Tokengram.Database.Tokengram.Entities
 {
     public class Chat : BaseEntity
     {

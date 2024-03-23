@@ -1,4 +1,4 @@
-namespace Tokengram.Database.Postgres.Entities
+namespace Tokengram.Database.Tokengram.Entities
 {
     public class User : BaseEntity
     {
@@ -20,13 +20,15 @@ namespace Tokengram.Database.Postgres.Entities
 
         public ICollection<Chat> Chats { get; set; } = new List<Chat>();
 
-        public ICollection<Post> Posts { get; set; } = new List<Post>();
-
         public ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
         public ICollection<CommentLike> CommentLikes { get; set; } = new List<CommentLike>();
 
         public ICollection<PostLike> PostLikes { get; set; } = new List<PostLike>();
+
+        public ICollection<Post> Posts = new List<Post>();
+
+        public ICollection<PostUserSettings> PostUserSettings = new List<PostUserSettings>();
 
         public string GetNonceMessage()
         {

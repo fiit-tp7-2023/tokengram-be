@@ -1,14 +1,18 @@
-namespace Tokengram.Database.Postgres.Entities
+namespace Tokengram.Database.Tokengram.Entities
 {
     public class Comment : BaseEntity
     {
         public long Id { get; set; }
 
+        public string Content { get; set; } = null!;
+
         public string CommenterAddress { get; set; } = null!;
 
-        public long PostId { get; set; }
+        public string PostNFTAddress { get; set; } = null!;
 
         public long? ParentCommentId { get; set; }
+
+        public int CommentReplyCount { get; set; } = 0;
 
         public int LikeCount { get; set; } = 0;
 

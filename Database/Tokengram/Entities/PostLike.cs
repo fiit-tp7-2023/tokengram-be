@@ -1,4 +1,4 @@
-namespace Tokengram.Database.Postgres.Entities
+namespace Tokengram.Database.Tokengram.Entities
 {
     public class PostLike : BaseEntity
     {
@@ -6,7 +6,7 @@ namespace Tokengram.Database.Postgres.Entities
 
         public string LikerAddress { get; set; } = null!;
 
-        public long PostId { get; set; }
+        public string PostNFTAddress { get; set; } = null!;
 
         public User Liker { get; set; } = null!;
 

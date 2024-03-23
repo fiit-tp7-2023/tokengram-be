@@ -1,4 +1,4 @@
-using Tokengram.Database.Postgres.Entities;
+using Tokengram.Database.Tokengram.Entities;
 using Tokengram.Models.DTOS.HTTP.Requests;
 
 namespace Tokengram.Services.Interfaces
@@ -7,10 +7,6 @@ namespace Tokengram.Services.Interfaces
     {
         Task<User> GetUserChatProfile(string userAddress);
 
-        Task<IEnumerable<ChatMessage>> GetChatMessages(
-            string userAddress,
-            long chatId,
-            ChatMessageSearchRequestDTO request
-        );
+        Task<IEnumerable<ChatMessage>> GetChatMessages(string userAddress, long chatId, PaginationRequestDTO request);
     }
 }

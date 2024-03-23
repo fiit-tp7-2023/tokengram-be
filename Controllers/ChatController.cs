@@ -32,12 +32,12 @@ namespace Tokengram.Controllers
         [HttpGet("{chatId}/messages")]
         public async Task<ActionResult<IEnumerable<ChatMessageResponseDTO>>> GetChatMessages(
             long chatId,
-            [FromQuery] ChatMessageSearchRequestDTO request
+            [FromQuery] PaginationRequestDTO request
         )
         {
             var result = await _chatService.GetChatMessages(GetUserAddress(), chatId, request);
 
-            return Ok(_mapper.Map<ChatMessageResponseDTO>(result));
+            return Ok(_mapper.Map<IEnumerable<ChatMessageResponseDTO>>(result));
         }
     }
 }

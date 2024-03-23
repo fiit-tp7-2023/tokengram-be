@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Tokengram.Database.Postgres.Entities
+namespace Tokengram.Database.Tokengram.Entities
 {
     public class BaseEntity
     {

@@ -1,4 +1,4 @@
-namespace Tokengram.Database.Postgres.Entities
+namespace Tokengram.Database.Tokengram.Entities
 {
     public class RefreshToken : BaseEntity
     {

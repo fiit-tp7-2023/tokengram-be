@@ -10,7 +10,7 @@ using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using Tokengram.Services.Interfaces;
 using Tokengram.Services;
-using Tokengram.Database.Postgres;
+using Tokengram.Database.Tokengram;
 using Microsoft.EntityFrameworkCore;
 using Tokengram.Models.Config;
 using System.Text;
@@ -19,6 +19,7 @@ using Tokengram.Hubs;
 using Tokengram.Models.Hubs;
 using Tokengram.Models.Mappings;
 using Microsoft.AspNetCore.SignalR;
+using Tokengram.Database.Indexer;
 
 namespace Tokengram
 {
@@ -37,7 +38,10 @@ namespace Tokengram
 
             // Db context configuration
             builder.Services.AddDbContext<TokengramDbContext>(
-                options => options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresDatabase"))
+                options => options.UseNpgsql(builder.Configuration.GetConnectionString("TokengramDatabase"))
+            );
+            builder.Services.AddDbContext<IndexerDbContext>(
+                options => options.UseNpgsql(builder.Configuration.GetConnectionString("IndexerDatabase"))
             );
 
             // Services configuration
@@ -65,9 +69,16 @@ namespace Tokengram
             builder.Services.AddAutoMapper(typeof(ChatMessageProfile));
             builder.Services.AddAutoMapper(typeof(ChatProfile));
             builder.Services.AddAutoMapper(typeof(UserProfile));
+            builder.Services.AddAutoMapper(typeof(NFTProfile));
+            builder.Services.AddAutoMapper(typeof(CommentProfile));
+            builder.Services.AddAutoMapper(typeof(CommentLikeProfile));
+            builder.Services.AddAutoMapper(typeof(PostLikeProfile));
 
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IChatService, ChatService>();
+            builder.Services.AddScoped<INFTService, NFTService>();
+            builder.Services.AddScoped<IPostService, PostService>();
+            builder.Services.AddScoped<ICommentService, CommentService>();
             builder.Services.AddSingleton<List<ConnectedUser>>();
             builder.Services.AddSingleton<List<ChatGroup>>();
 
