@@ -12,10 +12,7 @@ namespace Tokengram.Services.Interfaces
             string userAddress
         );
 
-        Task<IEnumerable<OwnedPostWithUserContext>> GetOwnedPostsWithUserContext(
-            PaginationRequestDTO request,
-            string userAddress
-        );
+        Task<IEnumerable<UserPost>> GetUserPosts(PaginationRequestDTO request, string userAddress);
 
         Task<PostLike> LikePost(string postNFTAddress, string userAddress);
 

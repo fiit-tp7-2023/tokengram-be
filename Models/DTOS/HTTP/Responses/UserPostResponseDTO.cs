@@ -1,6 +1,6 @@
 namespace Tokengram.Models.DTOS.HTTP.Responses
 {
-    public class OwnedPostWithUserContextResponseDTO
+    public class UserPostResponseDTO
     {
         public long Id { get; set; }
 

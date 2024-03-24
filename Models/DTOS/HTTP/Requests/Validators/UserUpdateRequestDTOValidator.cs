@@ -1,21 +1,20 @@
 using FluentValidation;
-using Nethereum.Util;
 using Tokengram.Constants;
 using Tokengram.Models.Validation;
 
 namespace Tokengram.Models.DTOS.HTTP.Requests.Validators
 {
-    public class ChangeProfileInfoRequestDTOValidator : BaseValidator<ChangeProfileInfoRequestDTO>
+    public class UserUpdateRequestDTOValidator : BaseValidator<UserUpdateRequest>
     {
-        public ChangeProfileInfoRequestDTOValidator()
+        public UserUpdateRequestDTOValidator()
         {
             RuleFor(x => x.Username)
                 .Length(ProfileSettings.MIN_USERNAME_LENGTH, ProfileSettings.MAX_USERNAME_LENGTH)
                 .When(s => s.Username != null);
 
-            RuleFor(x => x.ProfilePictureFile!)
+            RuleFor(x => x.ProfilePicture!)
                 .SetValidator(new ProfilePictureFileValidator())
-                .When(x => x.ProfilePictureFile != null);
+                .When(x => x.ProfilePicture != null);
         }
     }
 

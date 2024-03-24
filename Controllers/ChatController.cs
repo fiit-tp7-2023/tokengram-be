@@ -21,14 +21,6 @@ namespace Tokengram.Controllers
             _chatService = chatService;
         }
 
-        [HttpGet("profile")]
-        public async Task<ActionResult<UserChatProfileResponseDTO>> GetChatProfile()
-        {
-            var result = await _chatService.GetUserChatProfile(GetUserAddress());
-
-            return Ok(_mapper.Map<UserChatProfileResponseDTO>(result));
-        }
-
         [HttpGet("{chatId}/messages")]
         public async Task<ActionResult<IEnumerable<ChatMessageResponseDTO>>> GetChatMessages(
             long chatId,

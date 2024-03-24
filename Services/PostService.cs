@@ -77,10 +77,7 @@ namespace Tokengram.Services
             return postUserSettings;
         }
 
-        public async Task<IEnumerable<OwnedPostWithUserContext>> GetOwnedPostsWithUserContext(
-            PaginationRequestDTO request,
-            string userAddress
-        )
+        public async Task<IEnumerable<UserPost>> GetUserPosts(PaginationRequestDTO request, string userAddress)
         {
             User user = await _dbContext.Users.FirstAsync(x => x.Address == userAddress);
             IEnumerable<string> ownedNFTs = await _nftService.GetOwnedNFTs(request, userAddress);
@@ -103,12 +100,12 @@ namespace Tokengram.Services
             return posts.Select(x =>
             {
                 PostUserSettings? postUserSettings = x.PostUserSettings.FirstOrDefault();
-                OwnedPostWithUserContext ownedPostWithUserContext = _mapper.Map<OwnedPostWithUserContext>(x);
-                ownedPostWithUserContext.IsLiked = likedPosts.Contains(x.NFTAddress);
-                ownedPostWithUserContext.IsVisible = postUserSettings != null && postUserSettings.IsVisible;
-                ownedPostWithUserContext.Description = postUserSettings?.Description;
+                UserPost userPost = _mapper.Map<UserPost>(x);
+                userPost.IsLiked = likedPosts.Contains(x.NFTAddress);
+                userPost.IsVisible = postUserSettings != null && postUserSettings.IsVisible;
+                userPost.Description = postUserSettings?.Description;
 
-                return ownedPostWithUserContext;
+                return userPost;
             });
         }
 
