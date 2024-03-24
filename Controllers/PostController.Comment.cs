@@ -7,14 +7,14 @@ namespace Tokengram.Controllers
     public partial class PostController : BaseController
     {
         [HttpGet("{postNFTAddress}/comments")]
-        public async Task<ActionResult<IEnumerable<CommentResponseDTO>>> GetComments(
+        public async Task<ActionResult<IEnumerable<CommentWithUserContextResponseDTO>>> GetComments(
             string postNFTAddress,
             [FromQuery] PaginationRequestDTO request
         )
         {
-            var result = await _commentService.GetComments(request, postNFTAddress);
+            var result = await _commentService.GetCommentsWithUserContext(request, postNFTAddress, GetUserAddress());
 
-            return Ok(_mapper.Map<IEnumerable<CommentResponseDTO>>(result));
+            return Ok(_mapper.Map<IEnumerable<CommentWithUserContextResponseDTO>>(result));
         }
 
         [HttpPost("{postNFTAddress}/comments")]
@@ -33,14 +33,14 @@ namespace Tokengram.Controllers
         }
 
         [HttpGet("comments/{commentId}/replies")]
-        public async Task<ActionResult<IEnumerable<CommentResponseDTO>>> GetCommentReplies(
+        public async Task<ActionResult<IEnumerable<CommentWithUserContextResponseDTO>>> GetCommentReplies(
             long commentId,
             [FromQuery] PaginationRequestDTO request
         )
         {
-            var result = await _commentService.GetCommentReplies(request, commentId);
+            var result = await _commentService.GetCommentRepliesWithUserContext(request, commentId, GetUserAddress());
 
-            return Ok(_mapper.Map<IEnumerable<CommentResponseDTO>>(result));
+            return Ok(_mapper.Map<IEnumerable<CommentWithUserContextResponseDTO>>(result));
         }
 
         [HttpPut("comments/{commentId}")]

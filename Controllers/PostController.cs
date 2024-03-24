@@ -23,7 +23,7 @@ namespace Tokengram.Controllers
             _commentService = commentService;
         }
 
-        [HttpPut("my")]
+        [HttpGet("my")]
         public async Task<ActionResult<IEnumerable<BasicPostResponseDTO>>> GetOwnedPosts(
             [FromQuery] PaginationRequestDTO request
         )

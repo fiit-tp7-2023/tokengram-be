@@ -1,5 +1,6 @@
 using AutoMapper;
 using Tokengram.Database.Tokengram.Entities;
+using Tokengram.Models.CustomEntities;
 using Tokengram.Models.DTOS.HTTP.Responses;
 
 namespace Tokengram.Models.Mappings
@@ -10,7 +11,9 @@ namespace Tokengram.Models.Mappings
         {
             CreateMap<Comment, BasicCommentResponseDTO>();
 
-            CreateMap<Comment, CommentResponseDTO>();
+            CreateMap<Comment, CommentWithUserContext>();
+
+            CreateMap<CommentWithUserContext, CommentWithUserContextResponseDTO>();
         }
     }
 }

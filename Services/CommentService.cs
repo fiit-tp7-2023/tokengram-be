@@ -4,20 +4,28 @@ using Tokengram.Database.Tokengram.Entities;
 using Tokengram.Extensions;
 using Tokengram.Models.DTOS.HTTP.Requests;
 using Tokengram.Models.Exceptions;
+using Tokengram.Models.CustomEntities;
 using Tokengram.Services.Interfaces;
+using AutoMapper;
 
 namespace Tokengram.Services
 {
     public partial class CommentService : ICommentService
     {
         private readonly TokengramDbContext _dbContext;
+        private readonly IMapper _mapper;
 
-        public CommentService(TokengramDbContext dbContext, INFTService nftService)
+        public CommentService(TokengramDbContext dbContext, IMapper mapper)
         {
             _dbContext = dbContext;
+            _mapper = mapper;
         }
 
-        public async Task<IEnumerable<Comment>> GetComments(PaginationRequestDTO request, string postNFTAddress)
+        public async Task<IEnumerable<CommentWithUserContext>> GetCommentsWithUserContext(
+            PaginationRequestDTO request,
+            string postNFTAddress,
+            string userAddress
+        )
         {
             Post post =
                 await _dbContext.Posts.FirstOrDefaultAsync(x => x.NFTAddress == postNFTAddress)
@@ -29,11 +37,25 @@ namespace Tokengram.Services
                 .ThenBy(x => x.CreatedAt)
                 .Paginate(request.PageNumber, request.PageSize)
                 .ToListAsync();
+            IEnumerable<long> likedComments = await _dbContext.CommentLikes
+                .Where(x => x.LikerAddress == userAddress && comments.Select(x => x.Id).Contains(x.CommentId))
+                .Select(x => x.CommentId)
+                .ToListAsync();
 
-            return comments;
+            return comments.Select(x =>
+            {
+                CommentWithUserContext commentWithUserContext = _mapper.Map<CommentWithUserContext>(x);
+                commentWithUserContext.IsLiked = likedComments.Contains(x.Id);
+
+                return commentWithUserContext;
+            });
         }
 
-        public async Task<IEnumerable<Comment>> GetCommentReplies(PaginationRequestDTO request, long commentId)
+        public async Task<IEnumerable<CommentWithUserContext>> GetCommentRepliesWithUserContext(
+            PaginationRequestDTO request,
+            long commentId,
+            string userAddress
+        )
         {
             Comment comment =
                 await _dbContext.Comments.FirstOrDefaultAsync(x => x.Id == commentId)
@@ -44,8 +66,18 @@ namespace Tokengram.Services
                 .OrderBy(x => x.CreatedAt)
                 .Paginate(request.PageNumber, request.PageSize)
                 .ToListAsync();
+            IEnumerable<long> likedComments = await _dbContext.CommentLikes
+                .Where(x => x.LikerAddress == userAddress && comments.Select(x => x.Id).Contains(x.CommentId))
+                .Select(x => x.CommentId)
+                .ToListAsync();
 
-            return comments;
+            return comments.Select(x =>
+            {
+                CommentWithUserContext commentWithUserContext = _mapper.Map<CommentWithUserContext>(x);
+                commentWithUserContext.IsLiked = likedComments.Contains(x.Id);
+
+                return commentWithUserContext;
+            });
         }
 
         public async Task<Comment> CreateComment(CommentRequestDTO request, string postNFTAddress, string userAddress)

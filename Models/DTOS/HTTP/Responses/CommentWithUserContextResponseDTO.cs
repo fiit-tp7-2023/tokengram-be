@@ -2,7 +2,7 @@ using Tokengram.Models.DTOS.Shared.Responses;
 
 namespace Tokengram.Models.DTOS.HTTP.Responses
 {
-    public class CommentResponseDTO
+    public class CommentWithUserContextResponseDTO
     {
         public long Id { get; set; }
 
@@ -17,6 +17,8 @@ namespace Tokengram.Models.DTOS.HTTP.Responses
         public int CommentReplyCount { get; set; } = 0;
 
         public int LikeCount { get; set; } = 0;
+
+        public bool IsLiked { get; set; } = false;
 
         public DateTime CreatedAt { get; set; }
     }
