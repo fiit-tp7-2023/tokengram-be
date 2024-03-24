@@ -9,9 +9,9 @@ namespace Tokengram.Models.Mappings
     {
         public PostProfile()
         {
-            CreateMap<Post, OwnedPostWithUserContext>();
+            CreateMap<Post, UserPost>();
 
-            CreateMap<OwnedPostWithUserContext, OwnedPostWithUserContextResponseDTO>();
+            CreateMap<UserPost, UserPostResponseDTO>();
         }
     }
 }

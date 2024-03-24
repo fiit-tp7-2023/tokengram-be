@@ -1,8 +1,9 @@
 namespace Tokengram.Models.DTOS.HTTP.Requests
 {
-    public class ChangeProfileInfoRequestDTO
+    public class UserUpdateRequest
     {
         public string? Username { get; set; }
-        public IFormFile? ProfilePictureFile { get; set; }
+
+        public IFormFile? ProfilePicture { get; set; }
     }
 }

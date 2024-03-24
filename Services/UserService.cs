@@ -1,35 +1,30 @@
-using System;
 using System.Data.Entity;
 using Tokengram.Constants;
 using Tokengram.Database.Tokengram;
 using Tokengram.Database.Tokengram.Entities;
 using Tokengram.Models.DTOS.HTTP.Requests;
-using Tokengram.Models.DTOS.HTTP.Responses;
-using Tokengram.Models.DTOS.Shared.Responses;
 using Tokengram.Models.Exceptions;
 using Tokengram.Services.Interfaces;
 
 namespace Tokengram.Services
 {
-    public class ProfileService : IProfileService
+    public class UserService : IUserService
     {
-        private static Random random = new Random();
+        private static readonly Random random = new();
         private readonly TokengramDbContext _dbContext;
         private readonly IConfiguration _configuration;
 
-        public ProfileService(TokengramDbContext dbContext, IConfiguration configuration)
+        public UserService(TokengramDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
             _configuration = configuration;
         }
 
-        public async Task<User> ChangeProfileInfo(string userAddress, ChangeProfileInfoRequestDTO request)
+        public async Task<User> UpdateUser(string userAddress, UserUpdateRequest request)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Address == userAddress);
-            if (user == null)
-            {
-                throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
-            }
+            var user =
+                await _dbContext.Users.FirstOrDefaultAsync(x => x.Address == userAddress)
+                ?? throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
 
             if (request.Username != null)
             {
@@ -43,7 +38,7 @@ namespace Tokengram.Services
             }
 
             string? oldProfilePicture = null;
-            if (request.ProfilePictureFile != null)
+            if (request.ProfilePicture != null)
             {
                 string basePath =
                     _configuration["PublicUploads:FileSystemPath"] ?? "/var/tokengram/storage/uploads/public/";
@@ -53,7 +48,7 @@ namespace Tokengram.Services
 
                 string fileName = GenerateUniqueFileName(
                     userFolder,
-                    Path.GetExtension(request.ProfilePictureFile.FileName)
+                    Path.GetExtension(request.ProfilePicture.FileName)
                 );
                 string fileRelativePath = Path.Combine(userAddress, fileName);
 
@@ -64,7 +59,7 @@ namespace Tokengram.Services
 
                 using (var stream = new FileStream(Path.Combine(basePath, fileRelativePath), FileMode.Create))
                 {
-                    request.ProfilePictureFile.CopyTo(stream);
+                    request.ProfilePicture.CopyTo(stream);
                 }
 
                 user.ProfilePicturePath = fileRelativePath;

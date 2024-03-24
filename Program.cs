@@ -87,7 +87,7 @@ namespace Tokengram
             builder.Services.AddScoped<INFTService, NFTService>();
             builder.Services.AddScoped<IPostService, PostService>();
             builder.Services.AddScoped<ICommentService, CommentService>();
-            builder.Services.AddScoped<IProfileService, ProfileService>();
+            builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddSingleton<List<ConnectedUser>>();
             builder.Services.AddSingleton<List<ChatGroup>>();
 
