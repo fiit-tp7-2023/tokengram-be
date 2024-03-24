@@ -41,6 +41,7 @@ namespace Tokengram.Migrations
                         address = table.Column<string>(type: "character varying(42)", maxLength: 42, nullable: false),
                         username = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: true),
                         nonce = table.Column<Guid>(type: "uuid", maxLength: 36, nullable: false),
+                        profile_picture_path = table.Column<string>(type: "text", nullable: true),
                         created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                         updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                     },
