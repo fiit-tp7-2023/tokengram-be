@@ -6,9 +6,22 @@ namespace Tokengram.Models.Mappings
 {
     public class UserProfile : Profile
     {
-        public UserProfile()
+        public UserProfile(IConfiguration _configuration)
         {
-            CreateMap<User, UserResponseDTO>();
+            string uploadsUrlPath = _configuration["PublicUploads:UrlPath"] ?? "/";
+            if (!uploadsUrlPath.EndsWith("/"))
+            {
+                uploadsUrlPath += "/";
+            }
+
+            CreateMap<User, UserResponseDTO>()
+                .ForMember(
+                    dest => dest.ProfilePicture,
+                    opt => opt.MapFrom(
+                        (src, dst, d, context) => src.ProfilePicturePath != null ?
+                            uploadsUrlPath + src.ProfilePicturePath : null
+                    )
+                );
 
             CreateMap<User, UserChatProfileResponseDTO>()
                 .ForMember(

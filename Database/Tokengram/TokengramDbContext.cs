@@ -1,11 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Tokengram.Database.Tokengram.Entities;
+using Tokengram.Constants;
 
 namespace Tokengram.Database.Tokengram
 {
     public class TokengramDbContext : DbContext
     {
         const int ADDRESS_MAX_LENGTH = 42;
+        const int USERNAME_MAX_LENGTH = ProfileSettings.MAX_USERNAME_LENGTH;
 
         public TokengramDbContext(DbContextOptions<TokengramDbContext> options)
             : base(options) { }
@@ -56,8 +58,9 @@ namespace Tokengram.Database.Tokengram
                 e.ToTable("users");
 
                 e.Property(x => x.Address).HasColumnName("address").HasMaxLength(ADDRESS_MAX_LENGTH);
-                e.Property(x => x.Username).HasColumnName("username").HasMaxLength(30).IsRequired(false);
+                e.Property(x => x.Username).HasColumnName("username").HasMaxLength(USERNAME_MAX_LENGTH).IsRequired(false);
                 e.Property(x => x.Nonce).HasColumnName("nonce").HasMaxLength(36);
+                e.Property(x => x.ProfilePicturePath).HasColumnName("profile_picture_path").IsRequired(false);
 
                 e.HasKey(x => x.Address);
 
