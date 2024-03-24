@@ -1,6 +1,6 @@
 namespace Tokengram.Constants
 {
-    public class ProfileSettings
+    public static class ProfileSettings
     {
         public const int MIN_USERNAME_LENGTH = 1;
         public const int MAX_USERNAME_LENGTH = 30;

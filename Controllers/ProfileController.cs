@@ -15,13 +15,11 @@ namespace Tokengram.Controllers
     {
         private readonly IMapper _mapper;
         private readonly IProfileService _profileService;
-        private readonly IConfiguration _configuration;
 
-        public ProfileController(IMapper mapper, IProfileService profileService, IConfiguration configuration)
+        public ProfileController(IMapper mapper, IProfileService profileService)
         {
             _profileService = profileService;
             _mapper = mapper;
-            _configuration = configuration;
         }
 
         [HttpPost]
