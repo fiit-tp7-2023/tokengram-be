@@ -1,5 +1,5 @@
 using AutoMapper;
-using Tokengram.Database.Postgres.Entities;
+using Tokengram.Database.Tokengram.Entities;
 using Tokengram.Models.DTOS.Shared.Responses;
 
 namespace Tokengram.Models.Mappings

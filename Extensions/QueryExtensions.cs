@@ -6,6 +6,13 @@ namespace Tokengram.Extensions
     {
         // Neo4j
 
+        public static async Task<T> FirstAsync<T>(this ICypherFluentQuery<T> queryable)
+        {
+            var results = await queryable.Limit(1).ResultsAsync;
+
+            return results.Single();
+        }
+
         public static async Task<T?> FirstOrDefaultAsync<T>(this ICypherFluentQuery<T> queryable)
         {
             var results = await queryable.Limit(1).ResultsAsync;

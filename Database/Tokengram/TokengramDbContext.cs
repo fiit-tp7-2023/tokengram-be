@@ -1,13 +1,13 @@
 using Microsoft.EntityFrameworkCore;
-using Tokengram.Database.Postgres.Entities;
+using Tokengram.Database.Tokengram.Entities;
 
-namespace Tokengram.Database.Postgres
+namespace Tokengram.Database.Tokengram
 {
     public class TokengramDbContext : DbContext
     {
         const int ADDRESS_MAX_LENGTH = 42;
 
-        public TokengramDbContext(DbContextOptions options)
+        public TokengramDbContext(DbContextOptions<TokengramDbContext> options)
             : base(options) { }
 
         public override Task<int> SaveChangesAsync(
@@ -98,10 +98,6 @@ namespace Tokengram.Database.Postgres
                                 .HasForeignKey(e => e.UserAddress)
                                 .OnDelete(DeleteBehavior.Cascade)
                     );
-                e.HasMany(x => x.Posts)
-                    .WithOne(x => x.Owner)
-                    .HasForeignKey(x => x.OwnerAddress)
-                    .OnDelete(DeleteBehavior.Cascade);
                 e.HasMany(x => x.Comments)
                     .WithOne(x => x.Commenter)
                     .HasForeignKey(x => x.CommenterAddress)
@@ -113,6 +109,10 @@ namespace Tokengram.Database.Postgres
                 e.HasMany(x => x.PostLikes)
                     .WithOne(x => x.Liker)
                     .HasForeignKey(x => x.LikerAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasMany(x => x.PostUserSettings)
+                    .WithOne(x => x.User)
+                    .HasForeignKey(x => x.UserAddress)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
@@ -228,25 +228,23 @@ namespace Tokengram.Database.Postgres
             {
                 e.ToTable("posts");
 
-                e.Property(x => x.Id).HasColumnName("id").UseIdentityAlwaysColumn();
-                e.Property(x => x.NftAddress).HasColumnName("nft_address").HasMaxLength(ADDRESS_MAX_LENGTH);
-                e.Property(x => x.OwnerAddress).HasColumnName("owner_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.NFTAddress).HasColumnName("nft_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.CommentCount).HasColumnName("comment_count").HasDefaultValue(0);
                 e.Property(x => x.LikeCount).HasColumnName("like_count").HasDefaultValue(0);
-                e.Property(x => x.IsVisible).HasColumnName("is_visible").HasDefaultValue(false);
 
-                e.HasKey(x => x.Id);
+                e.HasKey(x => x.NFTAddress);
 
-                e.HasOne(x => x.Owner)
-                    .WithMany(x => x.Posts)
-                    .HasForeignKey(x => x.OwnerAddress)
-                    .OnDelete(DeleteBehavior.SetNull);
                 e.HasMany(x => x.Comments)
                     .WithOne(x => x.Post)
-                    .HasForeignKey(x => x.PostId)
+                    .HasForeignKey(x => x.PostNFTAddress)
                     .OnDelete(DeleteBehavior.Cascade);
                 e.HasMany(x => x.Likes)
                     .WithOne(x => x.Post)
-                    .HasForeignKey(x => x.PostId)
+                    .HasForeignKey(x => x.PostNFTAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasMany(x => x.PostUserSettings)
+                    .WithOne(x => x.Post)
+                    .HasForeignKey(x => x.PostNFTAddress)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
@@ -256,9 +254,11 @@ namespace Tokengram.Database.Postgres
 
                 e.Property(x => x.Id).HasColumnName("id").UseIdentityAlwaysColumn();
                 e.Property(x => x.CommenterAddress).HasColumnName("commenter_address").HasMaxLength(ADDRESS_MAX_LENGTH);
-                e.Property(x => x.PostId).HasColumnName("post_id");
+                e.Property(x => x.PostNFTAddress).HasColumnName("post_nft_address").HasMaxLength(ADDRESS_MAX_LENGTH);
                 e.Property(x => x.ParentCommentId).HasColumnName("parent_comment_id");
+                e.Property(x => x.CommentReplyCount).HasColumnName("comment_reply_count").HasDefaultValue(0);
                 e.Property(x => x.LikeCount).HasColumnName("like_count").HasDefaultValue(0);
+                e.Property(x => x.Content).HasColumnName("content").HasMaxLength(500);
 
                 e.HasKey(x => x.Id);
 
@@ -268,7 +268,7 @@ namespace Tokengram.Database.Postgres
                     .OnDelete(DeleteBehavior.Cascade);
                 e.HasOne(x => x.Post)
                     .WithMany(x => x.Comments)
-                    .HasForeignKey(x => x.PostId)
+                    .HasForeignKey(x => x.PostNFTAddress)
                     .OnDelete(DeleteBehavior.Cascade);
                 e.HasOne(x => x.ParentComment)
                     .WithMany(x => x.CommentReplies)
@@ -290,7 +290,7 @@ namespace Tokengram.Database.Postgres
 
                 e.Property(x => x.Id).HasColumnName("id").UseIdentityAlwaysColumn();
                 e.Property(x => x.LikerAddress).HasColumnName("liker_address").HasMaxLength(ADDRESS_MAX_LENGTH);
-                e.Property(x => x.PostId).HasColumnName("post_id");
+                e.Property(x => x.PostNFTAddress).HasColumnName("post_nft_address").HasMaxLength(ADDRESS_MAX_LENGTH);
 
                 e.HasKey(x => x.Id);
 
@@ -300,7 +300,7 @@ namespace Tokengram.Database.Postgres
                     .OnDelete(DeleteBehavior.Cascade);
                 e.HasOne(x => x.Post)
                     .WithMany(x => x.Likes)
-                    .HasForeignKey(x => x.PostId)
+                    .HasForeignKey(x => x.PostNFTAddress)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
@@ -323,6 +323,28 @@ namespace Tokengram.Database.Postgres
                     .HasForeignKey(x => x.CommentId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
+
+            modelBuilder.Entity<PostUserSettings>(e =>
+            {
+                e.ToTable("post_user_settings");
+
+                e.Property(x => x.Id).HasColumnName("id").UseIdentityAlwaysColumn();
+                e.Property(x => x.PostNFTAddress).HasColumnName("post_nft_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.UserAddress).HasColumnName("user_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.IsVisible).HasColumnName("is_visible").HasDefaultValue(false);
+                e.Property(x => x.Description).HasColumnName("description").HasMaxLength(500).IsRequired(false);
+
+                e.HasKey(x => x.Id);
+
+                e.HasOne(x => x.Post)
+                    .WithMany(x => x.PostUserSettings)
+                    .HasForeignKey(x => x.PostNFTAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.User)
+                    .WithMany(x => x.PostUserSettings)
+                    .HasForeignKey(x => x.UserAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
         }
 
         public DbSet<User> Users { get; set; }
@@ -334,5 +356,15 @@ namespace Tokengram.Database.Postgres
         public DbSet<ChatInvitation> ChatInvitations { get; set; }
 
         public DbSet<ChatMessage> ChatMessages { get; set; }
+
+        public DbSet<Comment> Comments { get; set; }
+
+        public DbSet<CommentLike> CommentLikes { get; set; }
+
+        public DbSet<Post> Posts { get; set; }
+
+        public DbSet<PostLike> PostLikes { get; set; }
+
+        public DbSet<PostUserSettings> PostUserSettings { get; set; }
     }
 }

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Neo4jClient.Extensions;
-using Tokengram.Database.Postgres.Entities;
+using Tokengram.Database.Tokengram.Entities;
 using Tokengram.Models.DTOS.WS.Requests;
 using Tokengram.Hubs.Interfaces;
 using Microsoft.EntityFrameworkCore;

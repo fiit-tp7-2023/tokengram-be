@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
-using Tokengram.Database.Postgres;
-using Tokengram.Database.Postgres.Entities;
+using Tokengram.Database.Tokengram;
+using Tokengram.Database.Tokengram.Entities;
 using Tokengram.Hubs.Interfaces;
 using Tokengram.Models.Hubs;
 using Microsoft.EntityFrameworkCore;

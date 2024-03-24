@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using Tokengram.Database.Postgres;
-using Tokengram.Database.Postgres.Entities;
+using Tokengram.Database.Tokengram;
+using Tokengram.Database.Tokengram.Entities;
 using Tokengram.Extensions;
 using Tokengram.Models.DTOS.HTTP.Requests;
 using Tokengram.Models.Exceptions;
@@ -31,7 +31,7 @@ namespace Tokengram.Services
         public async Task<IEnumerable<ChatMessage>> GetChatMessages(
             string userAddress,
             long chatId,
-            ChatMessageSearchRequestDTO request
+            PaginationRequestDTO request
         )
         {
             Chat? chat = await _dbContext.Chats

@@ -1,5 +1,5 @@
 using FluentValidation;
-using Tokengram.Database.Postgres;
+using Tokengram.Database.Tokengram;
 using Tokengram.Models.Validation;
 
 namespace Tokengram.Models.DTOS.WS.Requests.Validators
