@@ -14,6 +14,7 @@ services:
       - team07
     volumes:
       - tokengram-backend_keys:/etc/team07/tokengram/backend/data-protection-keys
+      - "../storage/uploads/public:/var/tokengram/uploads/public"
 
 volumes:
   tokengram-backend_keys:
