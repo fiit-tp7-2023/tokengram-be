@@ -1,5 +1,6 @@
 using AutoMapper;
 using Tokengram.Database.Tokengram.Entities;
+using Tokengram.Models.CustomEntities;
 using Tokengram.Models.DTOS.HTTP.Responses;
 
 namespace Tokengram.Models.Mappings
@@ -8,7 +9,9 @@ namespace Tokengram.Models.Mappings
     {
         public PostProfile()
         {
-            CreateMap<Post, BasicPostResponseDTO>();
+            CreateMap<Post, OwnedPostWithUserContext>();
+
+            CreateMap<OwnedPostWithUserContext, OwnedPostWithUserContextResponseDTO>();
         }
     }
 }

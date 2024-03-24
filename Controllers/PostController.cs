@@ -23,25 +23,25 @@ namespace Tokengram.Controllers
             _commentService = commentService;
         }
 
-        [HttpPut("my")]
-        public async Task<ActionResult<IEnumerable<BasicPostResponseDTO>>> GetOwnedPosts(
+        [HttpGet("my")]
+        public async Task<ActionResult<IEnumerable<OwnedPostWithUserContextResponseDTO>>> GetOwnedPosts(
             [FromQuery] PaginationRequestDTO request
         )
         {
-            var result = await _postService.GetOwnedPosts(request, GetUserAddress());
+            var result = await _postService.GetOwnedPostsWithUserContext(request, GetUserAddress());
 
-            return Ok(_mapper.Map<IEnumerable<BasicPostResponseDTO>>(result));
+            return Ok(_mapper.Map<IEnumerable<OwnedPostWithUserContextResponseDTO>>(result));
         }
 
         [HttpPut("{postNFTAddress}/settings")]
-        public async Task<ActionResult<BasicPostResponseDTO>> UpdatePostUserSettings(
+        public async Task<ActionResult<BasicPostUserSettingsResponseDTO>> UpdatePostUserSettings(
             string postNFTAddress,
             PostUserSettingsRequestDTO request
         )
         {
             var result = await _postService.UpdatePostUserSettings(request, postNFTAddress, GetUserAddress());
 
-            return Ok(_mapper.Map<BasicPostResponseDTO>(result));
+            return Ok(_mapper.Map<BasicPostUserSettingsResponseDTO>(result));
         }
 
         [HttpGet("{postNFTAddress}/likes")]

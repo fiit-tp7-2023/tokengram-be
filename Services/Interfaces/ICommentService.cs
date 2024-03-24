@@ -1,13 +1,22 @@
 using Tokengram.Database.Tokengram.Entities;
+using Tokengram.Models.CustomEntities;
 using Tokengram.Models.DTOS.HTTP.Requests;
 
 namespace Tokengram.Services.Interfaces
 {
     public interface ICommentService
     {
-        Task<IEnumerable<Comment>> GetComments(PaginationRequestDTO request, string postNFTAddress);
+        Task<IEnumerable<CommentWithUserContext>> GetCommentsWithUserContext(
+            PaginationRequestDTO request,
+            string postNFTAddress,
+            string userAddress
+        );
 
-        Task<IEnumerable<Comment>> GetCommentReplies(PaginationRequestDTO request, long commentId);
+        Task<IEnumerable<CommentWithUserContext>> GetCommentRepliesWithUserContext(
+            PaginationRequestDTO request,
+            long commentId,
+            string userAddress
+        );
 
         Task<Comment> CreateComment(CommentRequestDTO request, string postNFTAddress, string userAddress);
 

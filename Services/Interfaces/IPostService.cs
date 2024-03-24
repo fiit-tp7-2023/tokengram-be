@@ -1,17 +1,21 @@
 using Tokengram.Database.Tokengram.Entities;
+using Tokengram.Models.CustomEntities;
 using Tokengram.Models.DTOS.HTTP.Requests;
 
 namespace Tokengram.Services.Interfaces
 {
     public interface IPostService
     {
-        Task<Post> UpdatePostUserSettings(
+        Task<PostUserSettings> UpdatePostUserSettings(
             PostUserSettingsRequestDTO request,
             string postNFTAddress,
             string userAddress
         );
 
-        Task<IEnumerable<Post>> GetOwnedPosts(PaginationRequestDTO request, string userAddress);
+        Task<IEnumerable<OwnedPostWithUserContext>> GetOwnedPostsWithUserContext(
+            PaginationRequestDTO request,
+            string userAddress
+        );
 
         Task<PostLike> LikePost(string postNFTAddress, string userAddress);
 

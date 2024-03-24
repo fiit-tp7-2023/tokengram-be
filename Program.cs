@@ -66,8 +66,9 @@ namespace Tokengram
             });
 
             // Add services to the container.
-            builder.Services.AddSingleton(provider =>
-                new MapperConfiguration(cfg =>
+            builder.Services.AddSingleton(
+                provider =>
+                    new MapperConfiguration(cfg =>
                     {
                         cfg.AddProfile(new ChatInvitationProfile());
                         cfg.AddProfile(new ChatMessageProfile());
@@ -77,8 +78,9 @@ namespace Tokengram
                         cfg.AddProfile(new CommentProfile());
                         cfg.AddProfile(new CommentLikeProfile());
                         cfg.AddProfile(new PostLikeProfile());
-                    }
-                ).CreateMapper());
+                        cfg.AddProfile(new PostUserSettingsProfile());
+                    }).CreateMapper()
+            );
 
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IChatService, ChatService>();

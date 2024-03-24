@@ -16,8 +16,8 @@ namespace Tokengram.Controllers
             _authService = authService;
         }
 
-        [HttpPost("nonce-message")]
-        public async Task<ActionResult<string>> GenerateNonceMessage(NonceRequestDTO request)
+        [HttpGet("nonce-message")]
+        public async Task<ActionResult<string>> GenerateNonceMessage([FromQuery] NonceRequestDTO request)
         {
             var nonceMessage = await _authService.GenerateNonceMessage(request);
 

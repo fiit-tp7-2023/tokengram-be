@@ -45,12 +45,16 @@ namespace Tokengram.Services
             string? oldProfilePicture = null;
             if (request.ProfilePictureFile != null)
             {
-                string basePath = _configuration["PublicUploads:FileSystemPath"] ?? "/var/tokengram/storage/uploads/public/";
+                string basePath =
+                    _configuration["PublicUploads:FileSystemPath"] ?? "/var/tokengram/storage/uploads/public/";
                 string userFolder = Path.Combine(basePath, userAddress);
 
                 Directory.CreateDirectory(userFolder);
 
-                string fileName = GenerateUniqueFileName(userFolder, Path.GetExtension(request.ProfilePictureFile.FileName));
+                string fileName = GenerateUniqueFileName(
+                    userFolder,
+                    Path.GetExtension(request.ProfilePictureFile.FileName)
+                );
                 string fileRelativePath = Path.Combine(userAddress, fileName);
 
                 if (user.ProfilePicturePath != null)

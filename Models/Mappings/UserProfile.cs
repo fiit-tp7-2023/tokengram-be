@@ -17,10 +17,11 @@ namespace Tokengram.Models.Mappings
             CreateMap<User, UserResponseDTO>()
                 .ForMember(
                     dest => dest.ProfilePicture,
-                    opt => opt.MapFrom(
-                        (src, dst, d, context) => src.ProfilePicturePath != null ?
-                            uploadsUrlPath + src.ProfilePicturePath : null
-                    )
+                    opt =>
+                        opt.MapFrom(
+                            (src, dst, d, context) =>
+                                src.ProfilePicturePath != null ? uploadsUrlPath + src.ProfilePicturePath : null
+                        )
                 );
 
             CreateMap<User, UserChatProfileResponseDTO>()

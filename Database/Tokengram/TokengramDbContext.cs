@@ -58,7 +58,10 @@ namespace Tokengram.Database.Tokengram
                 e.ToTable("users");
 
                 e.Property(x => x.Address).HasColumnName("address").HasMaxLength(ADDRESS_MAX_LENGTH);
-                e.Property(x => x.Username).HasColumnName("username").HasMaxLength(USERNAME_MAX_LENGTH).IsRequired(false);
+                e.Property(x => x.Username)
+                    .HasColumnName("username")
+                    .HasMaxLength(USERNAME_MAX_LENGTH)
+                    .IsRequired(false);
                 e.Property(x => x.Nonce).HasColumnName("nonce").HasMaxLength(36);
                 e.Property(x => x.ProfilePicturePath).HasColumnName("profile_picture_path").IsRequired(false);
 
