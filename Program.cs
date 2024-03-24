@@ -73,6 +73,7 @@ namespace Tokengram
             builder.Services.AddAutoMapper(typeof(CommentProfile));
             builder.Services.AddAutoMapper(typeof(CommentLikeProfile));
             builder.Services.AddAutoMapper(typeof(PostLikeProfile));
+            builder.Services.AddAutoMapper(typeof(PostUserSettingsProfile));
 
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IChatService, ChatService>();
