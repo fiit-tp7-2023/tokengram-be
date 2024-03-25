@@ -1,0 +1,34 @@
+services:
+  backend-db:
+    image: postgres:alpine
+    ports:
+      - 5432:5432
+    networks:
+      - tokengram
+    environment:
+      POSTGRES_PASSWORD: tokengram
+
+  backend:
+    build: .
+    container_name: tokengram-backend
+    image: tokengram-backend
+    ports:
+      - 5000:5000
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    volumes:
+      - tokengram-backend_keys:/etc/team07/tokengram/backend/data-protection-keys
+      - tokengram-backend_uploads:/var/tokengram/uploads/public
+    networks:
+      - tokengram
+    depends_on:
+      - backend-db
+
+volumes:
+  tokengram-backend_keys:
+    name: tokengram-backend_keys
+  tokengram-backend_uploads:
+    name: tokengram-backend_uploads
+
+networks:
+  tokengram:
