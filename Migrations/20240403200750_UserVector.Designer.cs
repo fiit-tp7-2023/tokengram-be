@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Tokengram.Database.Tokengram;
@@ -11,9 +12,11 @@ using Tokengram.Database.Tokengram;
 namespace Tokengram.Migrations
 {
     [DbContext(typeof(TokengramDbContext))]
-    partial class TokengramDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240403200750_UserVector")]
+    partial class UserVector
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -49,5 +49,27 @@ namespace Tokengram.Utils
 
             return preparedVector;
         }
+
+        public static Dictionary<string, int> ParseVector(string vector)
+        {
+            Dictionary<string, int> parsedVector = new Dictionary<string, int>();
+
+            if (string.IsNullOrEmpty(vector))
+                return parsedVector;
+
+            string[] elements = vector.Split(',');
+            foreach (string element in elements)
+            {
+                string[] keyValue = element.Split(':');
+                if (keyValue.Length == 2)
+                {
+                    string key = keyValue[0];
+                    int value = int.Parse(keyValue[1]);
+                    parsedVector[key] = value;
+                }
+            }
+
+            return parsedVector;
+        }
     }
 }

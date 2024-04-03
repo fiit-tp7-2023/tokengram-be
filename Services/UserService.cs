@@ -8,16 +8,25 @@ using Tokengram.Services.Interfaces;
 
 namespace Tokengram.Services
 {
-    public class UserService : IUserService
+    public partial class UserService : IUserService
     {
         private static readonly Random random = new();
         private readonly TokengramDbContext _dbContext;
         private readonly IConfiguration _configuration;
 
-        public UserService(TokengramDbContext dbContext, IConfiguration configuration)
+        private readonly INFTService _nftService;
+
+        public UserService(TokengramDbContext dbContext, IConfiguration configuration, INFTService nftService)
         {
             _dbContext = dbContext;
             _configuration = configuration;
+            _nftService = nftService;
+        }
+
+        public async Task<User> GetUser(string userAddress)
+        {
+            return await _dbContext.Users.FirstOrDefaultAsync(x => x.Address == userAddress)
+                ?? throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
         }
 
         public async Task<User> UpdateUser(string userAddress, UserUpdateRequest request)

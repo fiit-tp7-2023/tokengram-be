@@ -21,11 +21,19 @@ namespace Tokengram.Services
 
         private readonly INFTService _nftService;
 
-        public PostService(TokengramDbContext dbContext, IMapper mapper, INFTService nftService)
+        private readonly IUserService _userService;
+
+        public PostService(
+            TokengramDbContext dbContext,
+            IMapper mapper,
+            INFTService nftService,
+            IUserService userService
+        )
         {
             _dbContext = dbContext;
             _mapper = mapper;
             _nftService = nftService;
+            _userService = userService;
         }
 
         public async Task<PostUserSettings> UpdatePostUserSettings(

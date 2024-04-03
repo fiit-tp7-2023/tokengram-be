@@ -6,6 +6,8 @@ namespace Tokengram.Database.Tokengram.Entities
 
         public string? Username { get; set; }
 
+        public string UserVector { get; set; } = null!;
+
         public Guid Nonce { get; set; }
 
         public string? ProfilePicturePath { get; set; }
