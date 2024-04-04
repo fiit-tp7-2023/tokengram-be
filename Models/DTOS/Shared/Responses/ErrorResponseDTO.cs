@@ -1,7 +1,7 @@
 using System.Net;
 using Tokengram.Models.Validation;
 
-namespace Tokengram.Models.DTOS.HTTP.Responses
+namespace Tokengram.Models.DTOS.Shared.Responses
 {
     public class ErrorResponseDTO
     {

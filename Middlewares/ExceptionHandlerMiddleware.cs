@@ -1,10 +1,11 @@
 using System.Net;
-using Tokengram.Models.DTOS.HTTP.Responses;
+using Tokengram.Models.DTOS.Shared.Responses;
 using Tokengram.Constants;
 using Tokengram.Models.Exceptions;
 using FluentValidation;
 using Newtonsoft.Json;
 using Tokengram.Models.Validation;
+using Tokengram.Utils;
 
 namespace Tokengram.Middlewares
 {
@@ -67,13 +68,11 @@ namespace Tokengram.Middlewares
                     break;
 
                 case ValidationException ex:
-                {
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
                     errorResponse.StatusCode = HttpStatusCode.BadRequest;
                     errorResponse.Message = ErrorMessages.VALIDATION_ERROR;
-                    errorResponse.Errors = BuildValidationErrors(ex);
+                    errorResponse.Errors = ErrorUtil.BuildValidationErrors(ex);
                     break;
-                }
 
                 // Custom exceptions
                 case BadRequestException ex:
@@ -107,7 +106,7 @@ namespace Tokengram.Middlewares
                     break;
             }
 
-            _logger.LogError(exception.Message);
+            _logger.LogError(exception, exception.Message);
             var result = JsonConvert.SerializeObject(
                 errorResponse,
                 new JsonSerializerSettings
@@ -116,16 +115,6 @@ namespace Tokengram.Middlewares
                 }
             );
             await context.Response.WriteAsync(result);
-        }
-
-        private static IEnumerable<ValidationError> BuildValidationErrors(ValidationException ex)
-        {
-            var errors = new List<ValidationError>();
-
-            foreach (var error in ex.Errors)
-                errors.Add(new ValidationError { Property = error.PropertyName, Message = error.ErrorMessage });
-
-            return errors;
         }
     }
 }
