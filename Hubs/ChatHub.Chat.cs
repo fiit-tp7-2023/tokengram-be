@@ -27,6 +27,7 @@ namespace Tokengram.Hubs
                     AdminAddress = sender.Address,
                     Type = request.UserAddresses.Count > 2 ? Enums.ChatTypeEnum.GROUP : Enums.ChatTypeEnum.PRIVATE
                 };
+            chat.Users.Add(sender);
 
             foreach (string userAddress in request.UserAddresses)
             {
@@ -40,9 +41,9 @@ namespace Tokengram.Hubs
                 );
             }
 
+            await _dbContext.Chats.AddAsync(chat);
             await _dbContext.SaveChangesAsync();
 
-            chat = await _dbContext.Chats.Include(x => x.Users).FirstAsync(x => x.Id == chat.Id);
             ReceivedChatInvitationResponseDTO chatInvitationResponse =
                 new() { Chat = _mapper.Map<BasicChatResponseDTO>(chat), Sender = _mapper.Map<UserResponseDTO>(sender) };
 

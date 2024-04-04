@@ -29,7 +29,10 @@ namespace Tokengram.Middlewares
                     var validationResult = await validator.ValidateAsync(new ValidationContext<object>(request!));
 
                     if (!validationResult.IsValid)
-                        throw new HubException(Constants.ErrorMessages.VALIDATION_ERROR);
+                        throw new ValidationException(
+                            Constants.ErrorMessages.VALIDATION_ERROR,
+                            validationResult.Errors
+                        );
                 }
             }
 
