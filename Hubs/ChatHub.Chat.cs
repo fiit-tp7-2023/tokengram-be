@@ -223,10 +223,13 @@ namespace Tokengram.Hubs
             if (chatDeleted)
             {
                 await Clients.Group(chat.Id.ToString()).AdminDeletedChat(chat.Id);
-                ChatGroup chatGroup = _chatGroups.First(x => x.ChatId == chat.Id);
-                foreach (ConnectedUser connection in chatGroup.ConnectedUsers)
+                ChatGroup? chatGroup = _chatGroups.FirstOrDefault(x => x.ChatId == chat.Id);
+                if (chatGroup != null)
                 {
-                    await RemoveUserConnectionFromChatGroup(chat, connection);
+                    foreach (ConnectedUser connection in chatGroup.ConnectedUsers)
+                    {
+                        await RemoveUserConnectionFromChatGroup(chat, connection);
+                    }
                 }
             }
             else

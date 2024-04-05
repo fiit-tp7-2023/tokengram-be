@@ -5,7 +5,6 @@ using Tokengram.Models.DTOS.WS.Requests;
 using Tokengram.Hubs.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Tokengram.Models.DTOS.Shared.Responses;
-using Tokengram.Infrastructure.ActionFilters;
 using Tokengram.Infrastructure.ActionFilterAttributes;
 
 namespace Tokengram.Hubs
