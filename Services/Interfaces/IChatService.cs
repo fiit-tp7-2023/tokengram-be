@@ -7,6 +7,6 @@ namespace Tokengram.Services.Interfaces
     {
         Task<User> GetUserChatProfile(string userAddress);
 
-        Task<IEnumerable<ChatMessage>> GetChatMessages(string userAddress, long chatId, PaginationRequestDTO request);
+        Task<IEnumerable<ChatMessage>> GetChatMessages(string userAddress, Chat chat, PaginationRequestDTO request);
     }
 }

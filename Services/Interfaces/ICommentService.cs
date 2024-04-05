@@ -8,26 +8,26 @@ namespace Tokengram.Services.Interfaces
     {
         Task<IEnumerable<CommentWithUserContext>> GetCommentsWithUserContext(
             PaginationRequestDTO request,
-            string postNFTAddress,
+            Post post,
             string userAddress
         );
 
         Task<IEnumerable<CommentWithUserContext>> GetCommentRepliesWithUserContext(
             PaginationRequestDTO request,
-            long commentId,
+            Comment comment,
             string userAddress
         );
 
-        Task<Comment> CreateComment(CommentRequestDTO request, string postNFTAddress, string userAddress);
+        Task<Comment> CreateComment(CommentRequestDTO request, Post post, string userAddress);
 
-        Task<Comment> UpdateComment(CommentUpdateRequestDTO request, long commentId, string userAddress);
+        Task<Comment> UpdateComment(CommentUpdateRequestDTO request, Comment comment, string userAddress);
 
-        Task DeleteComment(long commentId, string userAddress);
+        Task DeleteComment(Comment comment, string userAddress);
 
-        Task<CommentLike> LikeComment(long commentId, string userAddress);
+        Task<CommentLike> LikeComment(Comment comment, string userAddress);
 
-        Task UnlikeComment(long commentId, string userAddress);
+        Task UnlikeComment(Comment comment, string userAddress);
 
-        Task<IEnumerable<CommentLike>> GetCommentLikes(PaginationRequestDTO request, long commentId);
+        Task<IEnumerable<CommentLike>> GetCommentLikes(PaginationRequestDTO request, Comment comment);
     }
 }

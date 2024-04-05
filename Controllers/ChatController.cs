@@ -1,6 +1,8 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tokengram.Database.Tokengram.Entities;
+using Tokengram.Infrastructure.ActionFilters;
 using Tokengram.Models.DTOS.HTTP.Requests;
 using Tokengram.Models.DTOS.Shared.Responses;
 using Tokengram.Services.Interfaces;
@@ -9,7 +11,7 @@ namespace Tokengram.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("[controller]")]
+    [Route("chats")]
     public class ChatController : BaseController
     {
         private readonly IMapper _mapper;
@@ -21,13 +23,24 @@ namespace Tokengram.Controllers
             _chatService = chatService;
         }
 
+        [HttpGet("")]
+        public async Task<ActionResult<UserChatProfileResponseDTO>> GetUserChatProfile()
+        {
+            var result = await _chatService.GetUserChatProfile(GetUserAddress());
+
+            return Ok(_mapper.Map<UserChatProfileResponseDTO>(result));
+        }
+
         [HttpGet("{chatId}/messages")]
+        [BindChat]
         public async Task<ActionResult<IEnumerable<ChatMessageResponseDTO>>> GetChatMessages(
             long chatId,
             [FromQuery] PaginationRequestDTO request
         )
         {
-            var result = await _chatService.GetChatMessages(GetUserAddress(), chatId, request);
+            Chat chat = (HttpContext.Items["chat"] as Chat)!;
+
+            var result = await _chatService.GetChatMessages(GetUserAddress(), chat, request);
 
             return Ok(_mapper.Map<IEnumerable<ChatMessageResponseDTO>>(result));
         }

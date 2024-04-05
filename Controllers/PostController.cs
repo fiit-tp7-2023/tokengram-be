@@ -1,6 +1,8 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tokengram.Database.Tokengram.Entities;
+using Tokengram.Infrastructure.ActionFilters;
 using Tokengram.Models.DTOS.HTTP.Requests;
 using Tokengram.Models.DTOS.HTTP.Responses;
 using Tokengram.Services.Interfaces;
@@ -9,7 +11,7 @@ namespace Tokengram.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("[controller]")]
+    [Route("posts")]
     public partial class PostController : BaseController
     {
         private readonly IMapper _mapper;
@@ -21,6 +23,16 @@ namespace Tokengram.Controllers
             _mapper = mapper;
             _postService = postService;
             _commentService = commentService;
+        }
+
+        [HttpGet("")]
+        public async Task<ActionResult<IEnumerable<UserPostResponseDTO>>> GetUserPosts(
+            [FromQuery] PaginationRequestDTO request
+        )
+        {
+            var result = await _postService.GetUserPosts(request, GetUserAddress());
+
+            return Ok(_mapper.Map<IEnumerable<UserPostResponseDTO>>(result));
         }
 
         [HttpPut("{postNFTAddress}/settings")]
@@ -35,20 +47,26 @@ namespace Tokengram.Controllers
         }
 
         [HttpGet("{postNFTAddress}/likes")]
+        [BindPost]
         public async Task<ActionResult<IEnumerable<PostLikeResponseDTO>>> GetPostLikes(
             string postNFTAddress,
             [FromQuery] PaginationRequestDTO request
         )
         {
-            var result = await _postService.GetPostLikes(request, postNFTAddress);
+            Post post = (HttpContext.Items["post"] as Post)!;
+
+            var result = await _postService.GetPostLikes(request, post);
 
             return Ok(_mapper.Map<IEnumerable<PostLikeResponseDTO>>(result));
         }
 
         [HttpPost("{postNFTAddress}/likes")]
+        [BindPost]
         public async Task<ActionResult<BasicPostLikeResponseDTO>> LikePost(string postNFTAddress)
         {
-            var result = await _postService.LikePost(postNFTAddress, GetUserAddress());
+            Post post = (HttpContext.Items["post"] as Post)!;
+
+            var result = await _postService.LikePost(post, GetUserAddress());
 
             return CreatedAtAction(
                 nameof(LikePost),
@@ -58,9 +76,12 @@ namespace Tokengram.Controllers
         }
 
         [HttpDelete("{postNFTAddress}/likes")]
+        [BindPost]
         public async Task<ActionResult<BasicPostLikeResponseDTO>> UnlikePost(string postNFTAddress)
         {
-            await _postService.UnlikePost(postNFTAddress, GetUserAddress());
+            Post post = (HttpContext.Items["post"] as Post)!;
+
+            await _postService.UnlikePost(post, GetUserAddress());
 
             return NoContent();
         }

@@ -7,6 +7,8 @@ using Tokengram.Hubs.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Tokengram.Models.DTOS.Shared.Responses;
 using Tokengram.Models.Hubs;
+using Tokengram.Infrastructure.ActionFilterAttributes;
+using Tokengram.Enums;
 
 namespace Tokengram.Hubs
 {
@@ -61,17 +63,21 @@ namespace Tokengram.Hubs
             return _mapper.Map<ChatResponseDTO>(chat);
         }
 
-        public async Task InviteToChat(ChatInvitationRequestDTO request)
+        [BindChatHub]
+        [BindUserHub(UserMethodKey = "invitedUserAddress", ItemKey = "invitedUser")]
+        public async Task InviteToChat(long chatId, long invitedUserAddress)
         {
+            Chat chat = (Context.Items["chat"] as Chat)!;
+            User invitedUser = (Context.Items["invitedUser"] as User)!;
+
+            chat = await _dbContext.Chats.Include(x => x.Users).FirstAsync(x => x.Id == chat.Id);
             User sender = await GetUser();
-            User invitedUser = await _dbContext.Users.FirstAsync(x => x.Address == request.UserAddress);
-            Chat chat = await _dbContext.Chats.Include(x => x.Users).FirstAsync(x => x.Id == request.ChatId);
             bool isChatAdmin = chat.AdminAddress == sender.Address;
-            bool invitationExists = chat.ChatInvitations.Any(x => x.UserAddress == request.UserAddress);
+            bool invitationExists = chat.ChatInvitations.Any(x => x.UserAddress == invitedUser.Address);
 
             if (chat.Type == Enums.ChatTypeEnum.PRIVATE)
                 throw new HubException(Constants.ErrorMessages.CHAT_INVITATION_TO_PRIVATE_CHAT);
-            if (sender.Address == request.UserAddress)
+            if (sender.Address == invitedUser.Address)
                 throw new HubException(Constants.ErrorMessages.CHAT_INVITATION_TO_SELF);
             if (!isChatAdmin)
                 throw new HubException(Constants.ErrorMessages.CHAT_INVITATION_NOT_ADMIN);
@@ -82,28 +88,34 @@ namespace Tokengram.Hubs
                 new()
                 {
                     Sender = sender,
-                    UserAddress = request.UserAddress,
+                    User = invitedUser,
                     Chat = chat
                 };
             await _dbContext.ChatInvitations.AddAsync(chatInvitation);
             await _dbContext.SaveChangesAsync();
 
             await Clients
-                .AllExcept(_connectedUsers.Where(x => x.Address != request.UserAddress).Select(x => x.ConnectionId))
+                .AllExcept(_connectedUsers.Where(x => x.Address != invitedUser.Address).Select(x => x.ConnectionId))
                 .ReceivedChatInvitation(_mapper.Map<ReceivedChatInvitationResponseDTO>(chatInvitation));
             await Clients
                 .OthersInGroup(chat.Id.ToString())
                 .AdminInvitedUser(chat.Id, _mapper.Map<UserResponseDTO>(invitedUser));
         }
 
-        public async Task<ChatResponseDTO?> RespondToChatInvitation(ChatInvitationResponseRequestDTO request)
+        [BindChatHub]
+        public async Task<ChatResponseDTO?> RespondToChatInvitation(
+            long chatId,
+            ChatInvitationResponseRequestDTO request
+        )
         {
+            Chat chat = (Context.Items["chat"] as Chat)!;
+
             User respondingUser = await GetUser();
-            Chat chat = await _dbContext.Chats
+            chat = await _dbContext.Chats
                 .Include(x => x.Users)
                 .Include(x => x.ChatMessages.OrderByDescending(y => y.CreatedAt).Take(1))
                 .ThenInclude(x => x.Sender)
-                .FirstAsync(x => x.Id == request.ChatId);
+                .FirstAsync(x => x.Id == chat.Id);
             ChatInvitation? chatInvitation = chat.ChatInvitations.FirstOrDefault(
                 x => x.UserAddress == respondingUser.Address
             );
@@ -138,52 +150,77 @@ namespace Tokengram.Hubs
             }
         }
 
-        public async Task PromoteToAdmin(ChatPromoteToAdminRequestDTO request)
+        [BindChatHub]
+        [BindUserHub(UserMethodKey = "adminAddress", ItemKey = "admin")]
+        public async Task PromoteToAdmin(long chatId, long adminAddress)
         {
+            Chat chat = (Context.Items["chat"] as Chat)!;
+            User admin = (Context.Items["invitedUser"] as User)!;
+
+            chat = await _dbContext.Chats
+                .Include(x => x.Users)
+                .Include(x => x.ChatMessages.OrderByDescending(y => y.CreatedAt).Take(1))
+                .ThenInclude(x => x.Sender)
+                .FirstAsync(x => x.Id == chat.Id);
             User promotingUser = await GetUser();
-            User newAdmin = await _dbContext.Users.FirstAsync(x => x.Address == request.AdminAddress);
-            Chat chat = await _dbContext.Chats.Include(x => x.ChatInvitations).FirstAsync(x => x.Id == request.ChatId);
-            ChatInvitation? chatInvitation = chat.ChatInvitations.FirstOrDefault(
+            bool isAdminMember = await _dbContext.ChatInvitations.AnyAsync(
                 x => x.UserAddress == promotingUser.Address && x.JoinedAt != null
             );
-            bool isAdmin = chat.AdminAddress == promotingUser.Address;
+            bool isPromoterAdmin = chat.AdminAddress == promotingUser.Address;
 
-            if (chatInvitation == null)
-                throw new HubException(Constants.ErrorMessages.CHAT_NOT_MEMBER);
             if (chat.Type == Enums.ChatTypeEnum.PRIVATE)
                 throw new HubException(Constants.ErrorMessages.CHAT_PROMOTE_ADMIN_PRIVATE_CHAT);
-            if (!isAdmin)
+            if (isAdminMember)
+                throw new HubException(Constants.ErrorMessages.CHAT_PROMOTE_ADMIN_NOT_MEMBER);
+            if (!isAdminMember)
                 throw new HubException(Constants.ErrorMessages.CHAT_PROMOTE_ADMIN_NOT_ADMIN);
 
-            chat.AdminAddress = request.AdminAddress;
+            chat.AdminAddress = admin.Address;
             await _dbContext.SaveChangesAsync();
 
-            await Clients.OthersInGroup(chat.Id.ToString()).NewAdmin(chat.Id, _mapper.Map<UserResponseDTO>(newAdmin));
+            await Clients.OthersInGroup(chat.Id.ToString()).NewAdmin(chat.Id, _mapper.Map<UserResponseDTO>(admin));
         }
 
-        public async Task LeaveChat(ChatLeaveRequestDTO request)
+        [BindChatHub]
+        public async Task LeaveChat(long chatId)
         {
+            Chat chat = (Context.Items["chat"] as Chat)!;
+
             User leavingUser = await GetUser();
-            Chat chat = await _dbContext.Chats.Include(x => x.ChatInvitations).FirstAsync(x => x.Id == request.ChatId);
-            ChatInvitation? chatInvitation = chat.ChatInvitations.FirstOrDefault(
-                x => x.UserAddress == leavingUser.Address && x.JoinedAt != null
+            List<ChatInvitation> acceptedChatInvitations = await _dbContext.ChatInvitations
+                .Include(x => x.User)
+                .Where(x => x.ChatId == chat.Id && x.JoinedAt != null)
+                .ToListAsync();
+            ChatInvitation? leavingUserChatInvitation = acceptedChatInvitations.FirstOrDefault(
+                x => x.UserAddress == leavingUser.Address
             );
             bool isAdmin = chat.AdminAddress == leavingUser.Address;
+            bool chatDeleted = false;
+            bool newAdminPromoted = false;
 
-            if (chatInvitation == null)
+            if (leavingUserChatInvitation == null)
                 throw new HubException(Constants.ErrorMessages.CHAT_NOT_MEMBER);
-            if (chat.Type == Enums.ChatTypeEnum.PRIVATE)
-                throw new HubException(Constants.ErrorMessages.CHAT_LEAVE_PRIVATE_CHAT);
 
             if (isAdmin)
-                _dbContext.Chats.Remove(chat);
+            {
+                if (chat.Type == ChatTypeEnum.PRIVATE && acceptedChatInvitations.Count > 1)
+                {
+                    chat.Admin = acceptedChatInvitations.First(x => x.UserAddress != leavingUser.Address).User;
+                    newAdminPromoted = true;
+                }
+                else
+                {
+                    _dbContext.Chats.Remove(chat);
+                    chatDeleted = true;
+                }
+            }
 
-            _dbContext.ChatInvitations.Remove(chatInvitation);
+            _dbContext.ChatInvitations.Remove(leavingUserChatInvitation);
             await _dbContext.SaveChangesAsync();
 
             await RemoveUserConnectionsFromChatGroup(chat);
 
-            if (isAdmin)
+            if (chatDeleted)
             {
                 await Clients.Group(chat.Id.ToString()).AdminDeletedChat(chat.Id);
                 ChatGroup chatGroup = _chatGroups.First(x => x.ChatId == chat.Id);
@@ -193,9 +230,15 @@ namespace Tokengram.Hubs
                 }
             }
             else
+            {
+                if (newAdminPromoted)
+                {
+                    await Clients.Group(chat.Id.ToString()).NewAdmin(chat.Id, _mapper.Map<UserResponseDTO>(chat.Admin));
+                }
                 await Clients
                     .Group(chat.Id.ToString())
                     .UserLeftChat(chat.Id, _mapper.Map<UserResponseDTO>(leavingUser));
+            }
 
             await SendChatProfileDeviceSync();
         }

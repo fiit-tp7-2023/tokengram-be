@@ -1,7 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.SignalR;
 
-namespace Tokengram.Middlewares
+namespace Tokengram.Infrastructure.HubFilters
 {
     public class ValidationHubFilter : IHubFilter
     {

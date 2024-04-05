@@ -12,7 +12,6 @@ namespace Tokengram.Models.DTOS.WS.Requests.Validators
         {
             _dbContext = dbContext;
 
-            RuleFor(x => x.ChatId).Must(chatId => _dbContext.Chats.Any(x => x.Id == chatId));
             RuleFor(x => x.Content).NotEmpty();
             When(
                 x => x.ParentMessageId != null,

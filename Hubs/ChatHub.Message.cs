@@ -5,17 +5,22 @@ using Tokengram.Models.DTOS.WS.Requests;
 using Tokengram.Hubs.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Tokengram.Models.DTOS.Shared.Responses;
+using Tokengram.Infrastructure.ActionFilters;
+using Tokengram.Infrastructure.ActionFilterAttributes;
 
 namespace Tokengram.Hubs
 {
     [Authorize]
     public partial class ChatHub : BaseHub<IChatHub>
     {
-        public async Task<ChatMessageResponseDTO> SendMessage(ChatMessageRequestDTO request)
+        [BindChat]
+        public async Task<ChatMessageResponseDTO> SendMessage(long chatId, ChatMessageRequestDTO request)
         {
+            Chat chat = (Context.Items["chat"] as Chat)!;
             User sender = await GetUser();
-            Chat chat = await _dbContext.Chats.Include(x => x.ChatInvitations).FirstAsync(x => x.Id == request.ChatId);
-            ChatInvitation? chatInvitation = chat.ChatInvitations.FirstOrDefault(x => x.UserAddress == sender.Address);
+            ChatInvitation? chatInvitation = await _dbContext.ChatInvitations.FirstOrDefaultAsync(
+                x => x.UserAddress == sender.Address
+            );
 
             if (chatInvitation == null)
                 throw new HubException(Constants.ErrorMessages.CHAT_INVITATION_RESPONSE_NOT_INVITED);
@@ -29,7 +34,7 @@ namespace Tokengram.Hubs
                 {
                     Content = request.Content,
                     Sender = sender,
-                    ChatId = request.ChatId,
+                    Chat = chat,
                     ParentMessageId = request.ParentMessageId,
                 };
             await _dbContext.ChatMessages.AddAsync(chatMessage);
@@ -49,12 +54,11 @@ namespace Tokengram.Hubs
             return chatMessageResponse;
         }
 
-        public async Task DeleteMessage(ChatMessageDeleteRequestDTO request)
+        [BindChatMessageHub]
+        public async Task DeleteMessage(long chatId, long chatMessageId)
         {
+            ChatMessage chatMessage = (Context.Items["chat"] as ChatMessage)!;
             string userAddress = GetUserAddress();
-            ChatMessage chatMessage = await _dbContext.ChatMessages
-                .Include(x => x.MessageReplies)
-                .FirstAsync(x => x.Id == request.ChatMessageId);
             bool isSender = chatMessage.SenderAddress == userAddress;
 
             if (!isSender)
