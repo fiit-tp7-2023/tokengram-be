@@ -13,7 +13,7 @@ namespace Tokengram.Hubs
     [Authorize]
     public partial class ChatHub : BaseHub<IChatHub>
     {
-        [BindChat]
+        [BindChatHub]
         public async Task<ChatMessageResponseDTO> SendMessage(long chatId, ChatMessageRequestDTO request)
         {
             Chat chat = (Context.Items["chat"] as Chat)!;
