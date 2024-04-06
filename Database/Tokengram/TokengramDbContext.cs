@@ -120,6 +120,14 @@ namespace Tokengram.Database.Tokengram
                     .WithOne(x => x.User)
                     .HasForeignKey(x => x.UserAddress)
                     .OnDelete(DeleteBehavior.Cascade);
+                e.HasMany(x => x.Followers)
+                    .WithOne(x => x.FollowedUser)
+                    .HasForeignKey (x => x.FollowedUserAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasMany(x => x.Followings)
+                    .WithOne(x => x.User)
+                    .HasForeignKey(x => x.UserAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<RefreshToken>(e =>
@@ -349,6 +357,25 @@ namespace Tokengram.Database.Tokengram
                 e.HasOne(x => x.User)
                     .WithMany(x => x.PostUserSettings)
                     .HasForeignKey(x => x.UserAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<UserFollow>(e =>
+            {
+                e.ToTable("user_follows");
+                
+                e.Property(x => x.UserAddress).HasColumnName("user_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.FollowedUserAddress).HasColumnName("followed_user_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+
+                e.HasKey(x => new { x.UserAddress, x.FollowedUserAddress });
+
+                e.HasOne(x => x.User)
+                    .WithMany(x => x.Followings)
+                    .HasForeignKey(x => x.UserAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.FollowedUser)
+                    .WithMany(x => x.Followers)
+                    .HasForeignKey(x => x.FollowedUserAddress)
                     .OnDelete(DeleteBehavior.Cascade);
             });
         }
