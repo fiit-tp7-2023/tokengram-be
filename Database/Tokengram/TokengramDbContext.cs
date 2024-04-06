@@ -6,7 +6,7 @@ namespace Tokengram.Database.Tokengram
 {
     public class TokengramDbContext : DbContext
     {
-        const int ADDRESS_MAX_LENGTH = 42;
+        const int ADDRESS_MAX_LENGTH = ProfileSettings.MAX_ADDRESS_LENGTH;
         const int USERNAME_MAX_LENGTH = ProfileSettings.MAX_USERNAME_LENGTH;
 
         public TokengramDbContext(DbContextOptions<TokengramDbContext> options)
@@ -399,5 +399,7 @@ namespace Tokengram.Database.Tokengram
         public DbSet<PostLike> PostLikes { get; set; }
 
         public DbSet<PostUserSettings> PostUserSettings { get; set; }
+
+        public DbSet<UserFollow> UserFollows { get; set; }
     }
 }
