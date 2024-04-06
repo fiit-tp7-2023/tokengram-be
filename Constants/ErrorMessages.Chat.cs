@@ -14,11 +14,15 @@ namespace Tokengram.Constants
 
         public const string CHAT_INVITATION_RESPONSE_EXISTS = "You already joined this chat.";
 
+        public const string CHAT_PROMOTE_ADMIN_NOT_MEMBER = "Selected user is not a member of this chat.";
+
         public const string CHAT_NOT_MEMBER = "You are not a member of this chat.";
 
         public const string CHAT_NOT_FOUND = "Chat not found.";
 
         public const string CHAT_MESSAGE_NOT_SENDER = "You are not a sender of this message.";
+
+        public const string CHAT_MESSAGE_NOT_FOUND = "Chat message not found.";
 
         public const string CHAT_LEAVE_PRIVATE_CHAT = "Cannot leave private chat.";
 

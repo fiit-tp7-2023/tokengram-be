@@ -9,13 +9,10 @@ namespace Tokengram.Services
 {
     public partial class CommentService : ICommentService
     {
-        public async Task<CommentLike> LikeComment(long commentId, string userAddress)
+        public async Task<CommentLike> LikeComment(Comment comment, string userAddress)
         {
-            Comment comment =
-                await _dbContext.Comments.FirstOrDefaultAsync(x => x.Id == commentId)
-                ?? throw new NotFoundException(Constants.ErrorMessages.COMMENT_NOT_FOUND);
             CommentLike? commentLike = await _dbContext.CommentLikes.FirstOrDefaultAsync(
-                x => x.CommentId == commentId && x.LikerAddress == userAddress
+                x => x.CommentId == comment.Id && x.LikerAddress == userAddress
             );
 
             if (commentLike != null)
@@ -29,14 +26,11 @@ namespace Tokengram.Services
             return commentLike;
         }
 
-        public async Task UnlikeComment(long commentId, string userAddress)
+        public async Task UnlikeComment(Comment comment, string userAddress)
         {
-            Comment comment =
-                await _dbContext.Comments.FirstOrDefaultAsync(x => x.Id == commentId)
-                ?? throw new NotFoundException(Constants.ErrorMessages.COMMENT_NOT_FOUND);
             CommentLike commentLike =
                 await _dbContext.CommentLikes.FirstOrDefaultAsync(
-                    x => x.CommentId == commentId && x.LikerAddress == userAddress
+                    x => x.CommentId == comment.Id && x.LikerAddress == userAddress
                 ) ?? throw new BadRequestException(Constants.ErrorMessages.COMMENT_NOT_LIKED);
 
             _dbContext.CommentLikes.Remove(commentLike);
@@ -44,14 +38,11 @@ namespace Tokengram.Services
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<CommentLike>> GetCommentLikes(PaginationRequestDTO request, long commentId)
+        public async Task<IEnumerable<CommentLike>> GetCommentLikes(PaginationRequestDTO request, Comment comment)
         {
-            Comment comment =
-                await _dbContext.Comments.FirstOrDefaultAsync(x => x.Id == commentId)
-                ?? throw new NotFoundException(Constants.ErrorMessages.COMMENT_NOT_FOUND);
             IEnumerable<CommentLike> commentLikes = await _dbContext.CommentLikes
                 .Include(x => x.Liker)
-                .Where(x => x.CommentId == commentId)
+                .Where(x => x.CommentId == comment.Id)
                 .OrderBy(x => x.CreatedAt)
                 .Paginate(request.PageNumber, request.PageSize)
                 .ToListAsync();

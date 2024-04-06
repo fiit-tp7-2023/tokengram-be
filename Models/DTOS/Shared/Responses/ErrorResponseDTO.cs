@@ -5,6 +5,8 @@ namespace Tokengram.Models.DTOS.Shared.Responses
 {
     public class ErrorResponseDTO
     {
+        public bool IsError { get; set; } = true;
+
         public HttpStatusCode StatusCode { get; set; }
 
         public string Message { get; set; } = null!;

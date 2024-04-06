@@ -4,10 +4,9 @@ using Tokengram.Constants;
 using Tokengram.Models.Exceptions;
 using FluentValidation;
 using Newtonsoft.Json;
-using Tokengram.Models.Validation;
 using Tokengram.Utils;
 
-namespace Tokengram.Middlewares
+namespace Tokengram.Infrastructure.Middlewares
 {
     public class ExceptionHandlerMiddleware
     {

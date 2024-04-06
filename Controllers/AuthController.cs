@@ -6,7 +6,7 @@ using Tokengram.Services.Interfaces;
 namespace Tokengram.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("auth")]
     public class AuthController : BaseController
     {
         private readonly IAuthService _authService;

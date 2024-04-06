@@ -3,10 +3,9 @@ using FluentValidation;
 using Microsoft.AspNetCore.SignalR;
 using Tokengram.Constants;
 using Tokengram.Models.DTOS.Shared.Responses;
-using Tokengram.Models.Validation;
 using Tokengram.Utils;
 
-namespace Tokengram.Middlewares
+namespace Tokengram.Infrastructure.HubFilters
 {
     public class ExceptionHandlerHubFilter : IHubFilter
     {

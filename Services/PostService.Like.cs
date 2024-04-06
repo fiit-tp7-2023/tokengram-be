@@ -9,13 +9,10 @@ namespace Tokengram.Services
 {
     public partial class PostService : IPostService
     {
-        public async Task<PostLike> LikePost(string postNFTAddress, string userAddress)
+        public async Task<PostLike> LikePost(Post post, string userAddress)
         {
-            Post post =
-                await _dbContext.Posts.FirstOrDefaultAsync(x => x.NFTAddress == postNFTAddress)
-                ?? throw new NotFoundException(Constants.ErrorMessages.POST_NOT_FOUND);
             PostLike? postLike = await _dbContext.PostLikes.FirstOrDefaultAsync(
-                x => x.PostNFTAddress == postNFTAddress && x.LikerAddress == userAddress
+                x => x.PostNFTAddress == post.NFTAddress && x.LikerAddress == userAddress
             );
 
             if (postLike != null)
@@ -29,14 +26,11 @@ namespace Tokengram.Services
             return postLike;
         }
 
-        public async Task UnlikePost(string postNFTAddress, string userAddress)
+        public async Task UnlikePost(Post post, string userAddress)
         {
-            Post post =
-                await _dbContext.Posts.FirstOrDefaultAsync(x => x.NFTAddress == postNFTAddress)
-                ?? throw new NotFoundException(Constants.ErrorMessages.POST_NOT_FOUND);
             PostLike postLike =
                 await _dbContext.PostLikes.FirstOrDefaultAsync(
-                    x => x.PostNFTAddress == postNFTAddress && x.LikerAddress == userAddress
+                    x => x.PostNFTAddress == post.NFTAddress && x.LikerAddress == userAddress
                 ) ?? throw new BadRequestException(Constants.ErrorMessages.POST_NOT_LIKED);
 
             _dbContext.PostLikes.Remove(postLike);
@@ -44,14 +38,11 @@ namespace Tokengram.Services
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<PostLike>> GetPostLikes(PaginationRequestDTO request, string postNFTAddress)
+        public async Task<IEnumerable<PostLike>> GetPostLikes(PaginationRequestDTO request, Post post)
         {
-            Post post =
-                await _dbContext.Posts.FirstOrDefaultAsync(x => x.NFTAddress == postNFTAddress)
-                ?? throw new NotFoundException(Constants.ErrorMessages.POST_NOT_FOUND);
             IEnumerable<PostLike> postLikes = await _dbContext.PostLikes
                 .Include(x => x.Liker)
-                .Where(x => x.PostNFTAddress == postNFTAddress)
+                .Where(x => x.PostNFTAddress == post.NFTAddress)
                 .OrderBy(x => x.CreatedAt)
                 .Paginate(request.PageNumber, request.PageSize)
                 .ToListAsync();

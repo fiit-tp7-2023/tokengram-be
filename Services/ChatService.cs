@@ -30,18 +30,13 @@ namespace Tokengram.Services
 
         public async Task<IEnumerable<ChatMessage>> GetChatMessages(
             string userAddress,
-            long chatId,
+            Chat chat,
             PaginationRequestDTO request
         )
         {
-            Chat? chat = await _dbContext.Chats
-                .Include(x => x.ChatInvitations)
-                .FirstOrDefaultAsync(x => x.Id == chatId);
-
-            if (chat == null)
-                throw new NotFoundException(Constants.ErrorMessages.CHAT_NOT_FOUND);
-
-            bool isChatMember = chat.ChatInvitations.Any(x => x.UserAddress == userAddress && x.JoinedAt != null);
+            bool isChatMember = await _dbContext.ChatInvitations.AnyAsync(
+                x => x.ChatId == chat.Id && x.UserAddress == userAddress && x.JoinedAt != null
+            );
 
             if (!isChatMember)
                 throw new ForbiddenException(Constants.ErrorMessages.CHAT_NOT_MEMBER);

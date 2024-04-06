@@ -13,7 +13,6 @@ namespace Tokengram.Models.DTOS.WS.Requests.Validators
             _dbContext = dbContext;
 
             RuleFor(x => x.UserAddresses)
-                .NotEmpty()
                 .Must(userAddresses => userAddresses.Distinct().Count() == userAddresses.Count)
                 .Must(userAddresses => userAddresses.All(address => _dbContext.Users.Any(u => u.Address == address)));
         }
