@@ -2,6 +2,7 @@ using AutoMapper;
 using Tokengram.Database.Tokengram.Entities;
 using Tokengram.Models.CustomEntities;
 using Tokengram.Models.DTOS.HTTP.Responses;
+using Tokengram.Models.DTOS.Shared.Responses;
 
 namespace Tokengram.Models.Mappings
 {
@@ -11,8 +12,8 @@ namespace Tokengram.Models.Mappings
         {
             CreateMap<UserFollow, FollowerResponseDTO>()
                 .ForMember(
-                    dest => dest.UserAddress,
-                    opt => opt.MapFrom(x => x.FollowedUserAddress)
+                    dest => dest.User,
+                    opt => opt.MapFrom(x => x.FollowedUser)
                  )
                 .ForMember(
                     dest => dest.FollowingSince,

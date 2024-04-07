@@ -24,6 +24,8 @@ namespace Tokengram.Services
                 ?? throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
 
             return await _dbContext.UserFollows
+                .Include(x => x.User)
+                .Include(x => x.FollowedUser)
                 .Where(x => x.FollowedUserAddress == userAddress)
                 .OrderByDescending(x => x.CreatedAt)
                 .Paginate(request.PageNumber, request.PageSize)
@@ -36,17 +38,17 @@ namespace Tokengram.Services
                 ?? throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
 
             return await _dbContext.UserFollows
+                .Include(x => x.User)
+                .Include(x => x.FollowedUser)
                 .Where(x => x.UserAddress == userAddress)
                 .OrderByDescending(x => x.CreatedAt)
                 .Paginate(request.PageNumber, request.PageSize)
                 .ToListAsync();
         }
 
-        public async Task<UserFollow> FollowUser(string userAddress, string targetUserAddress)
+        public async Task<UserFollow> FollowUser(string userAddress, User targetUser)
         {
             var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Address == userAddress)
-                ?? throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
-            var targetUser = await _dbContext.Users.FirstOrDefaultAsync(x => x.Address == targetUserAddress)
                 ?? throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
 
             if (user.Address == targetUser.Address)
@@ -54,14 +56,14 @@ namespace Tokengram.Services
                 throw new BadRequestException(ErrorMessages.CANNOT_FOLLOW_SELF);
             }
 
-            var res = await _dbContext.UserFollows.AnyAsync(
+            var alreadyFollows = await _dbContext.UserFollows.AnyAsync(
                 x => x.UserAddress == userAddress && x.FollowedUserAddress == targetUser.Address);
-            if (res)
+            if (alreadyFollows)
             {
                 throw new BadRequestException(ErrorMessages.ALREADY_FOLLOWING);
             }
 
-            var follow = new UserFollow { UserAddress = userAddress, FollowedUserAddress = targetUserAddress };
+            var follow = new UserFollow { UserAddress = userAddress, FollowedUserAddress = targetUser.Address };
 
             await _dbContext.UserFollows.AddAsync(follow);
             await _dbContext.SaveChangesAsync();
@@ -69,11 +71,9 @@ namespace Tokengram.Services
             return follow;
         }
 
-        public async Task UnfollowUser(string userAddress, string targetUserAddress)
+        public async Task UnfollowUser(string userAddress, User targetUser)
         {
             var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Address == userAddress)
-                ?? throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
-            var targetUser = await _dbContext.Users.FirstOrDefaultAsync(x => x.Address == targetUserAddress)
                 ?? throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
 
             if (user.Address == targetUser.Address)
@@ -82,11 +82,19 @@ namespace Tokengram.Services
             }
 
             var follow = await _dbContext.UserFollows.FirstOrDefaultAsync(
-                x => x.UserAddress == userAddress && x.FollowedUserAddress == targetUserAddress)
+                x => x.UserAddress == userAddress && x.FollowedUserAddress == targetUser.Address)
                 ?? throw new BadRequestException(ErrorMessages.NOT_FOLLOWING);
 
             _dbContext.UserFollows.Remove(follow);
             await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task UnfollowUser(string userAddress, string targetUser)
+        {
+            var targetUserObj = await _dbContext.Users.FirstOrDefaultAsync(x => x.Address == targetUser)
+                ?? throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
+
+            await this.UnfollowUser(userAddress, targetUserObj);
         }
     }
 }
