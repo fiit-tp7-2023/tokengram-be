@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokengram.Database.Tokengram.Entities;
+using Tokengram.Infrastructure.ActionFilters;
 using Tokengram.Models.DTOS.HTTP.Requests;
 using Tokengram.Models.DTOS.HTTP.Responses;
 using Tokengram.Models.DTOS.Shared.Responses;
@@ -38,11 +39,13 @@ namespace Tokengram.Controllers
         }
 
         [HttpGet("{userAddress}/followers")]
+        [BindUser]
         public async Task<ActionResult<IEnumerable<FollowerResponseDTO>>> GetUserFollowers(
             string userAddress,
             [FromQuery] PaginationRequestDTO request)
         {
-            var result = await _followerService.GetUserFollowers(userAddress, request);
+            User user = (HttpContext.Items["user"] as User)!;
+            var result = await _followerService.GetUserFollowers(user, request);
             var dto = result.Select(x => new FollowerResponseDTO {
                 User = _mapper.Map<UserResponseDTO>(x.User),
                 FollowingSince = x.CreatedAt
@@ -52,6 +55,7 @@ namespace Tokengram.Controllers
         }
 
         [HttpDelete("followers/{userAddress}")]
+        [BindUser]
         public async Task<ActionResult> RemoveFollower(string userAddress)
         {
             User deletedFollower = (HttpContext.Items["user"] as User)!;
@@ -61,16 +65,19 @@ namespace Tokengram.Controllers
         }
 
         [HttpGet("{userAddress}/followings")]
+        [BindUser]
         public async Task<ActionResult<IEnumerable<FollowerResponseDTO>>> GetUserFollowings(
             string userAddress,
             [FromQuery] PaginationRequestDTO request)
         {
-            var result = await _followerService.GetUserFollowings(userAddress, request);
+            User user = (HttpContext.Items["user"] as User)!;
+            var result = await _followerService.GetUserFollowings(user, request);
 
             return Ok(_mapper.Map<IEnumerable<FollowerResponseDTO>>(result));
         }
 
         [HttpPost("followings/{userAddress}")]
+        [BindUser]
         public async Task<ActionResult<IEnumerable<FollowerResponseDTO>>> FollowUser(string userAddress)
         {
             User targetUser = (HttpContext.Items["user"] as User)!;
@@ -80,6 +87,7 @@ namespace Tokengram.Controllers
         }
 
         [HttpDelete("followings/{userAddress}")]
+        [BindUser]
         public async Task<ActionResult> UnfollowUser(string userAddress)
         {
             User targetUser = (HttpContext.Items["user"] as User)!;
