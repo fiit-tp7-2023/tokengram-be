@@ -81,6 +81,7 @@ namespace Tokengram
                         cfg.AddProfile(new CommentLikeProfile());
                         cfg.AddProfile(new PostLikeProfile());
                         cfg.AddProfile(new PostUserSettingsProfile());
+                        cfg.AddProfile(new FollowerProfile());
                     }).CreateMapper()
             );
 
@@ -90,7 +91,7 @@ namespace Tokengram
             builder.Services.AddScoped<IPostService, PostService>();
             builder.Services.AddScoped<ICommentService, CommentService>();
             builder.Services.AddScoped<IUserService, UserService>();
-
+            builder.Services.AddScoped<IFollowerService, FollowerService>();
             builder.Services.AddSingleton<List<ConnectedUser>>();
             builder.Services.AddSingleton<List<ChatGroup>>();
 
