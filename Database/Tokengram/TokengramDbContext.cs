@@ -67,7 +67,7 @@ namespace Tokengram.Database.Tokengram
 
                 e.HasKey(x => x.Address);
 
-                e.Property(x => x.UserVector).HasColumnName("user_vector");
+                e.Property(x => x.UserVector).HasColumnName("user_vector").IsRequired(false);
 
                 e.HasIndex(x => x.Username).IsUnique();
                 e.HasIndex(x => x.Nonce).IsUnique();
@@ -124,7 +124,7 @@ namespace Tokengram.Database.Tokengram
                     .OnDelete(DeleteBehavior.Cascade);
                 e.HasMany(x => x.Followers)
                     .WithOne(x => x.FollowedUser)
-                    .HasForeignKey (x => x.FollowedUserAddress)
+                    .HasForeignKey(x => x.FollowedUserAddress)
                     .OnDelete(DeleteBehavior.Cascade);
                 e.HasMany(x => x.Followings)
                     .WithOne(x => x.User)
@@ -365,9 +365,11 @@ namespace Tokengram.Database.Tokengram
             modelBuilder.Entity<UserFollow>(e =>
             {
                 e.ToTable("user_follows");
-                
+
                 e.Property(x => x.UserAddress).HasColumnName("user_address").HasMaxLength(ADDRESS_MAX_LENGTH);
-                e.Property(x => x.FollowedUserAddress).HasColumnName("followed_user_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.FollowedUserAddress)
+                    .HasColumnName("followed_user_address")
+                    .HasMaxLength(ADDRESS_MAX_LENGTH);
 
                 e.HasKey(x => new { x.UserAddress, x.FollowedUserAddress });
 
