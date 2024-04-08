@@ -31,7 +31,7 @@ namespace Tokengram.Services
 
         public AuthService(
             TokengramDbContext dbContext,
-            IOptions<JWTOptions> jWTOptions,
+            IOptions<JWTOptions> jwtOptions,
             INFTService nftService,
             IUserService userService
         )
@@ -40,7 +40,7 @@ namespace Tokengram.Services
             _signer = new EthereumMessageSigner();
             _userService = userService;
             _nftService = nftService;
-            _jwtOptions = jWTOptions.Value;
+            _jwtOptions = jwtOptions.Value;
         }
 
         public async Task<NonceMessageResponseDTO> GenerateNonceMessage(NonceRequestDTO request)
