@@ -1,4 +1,4 @@
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using Tokengram.Constants;
 using Tokengram.Database.Tokengram;
 using Tokengram.Database.Tokengram.Entities;
