@@ -2,6 +2,7 @@ using Tokengram.Database.Tokengram.Entities;
 using Tokengram.Services.Interfaces;
 using Tokengram.Constants;
 using Tokengram.Database.Neo4j.Nodes;
+using Tokengram.Utils;
 
 namespace Tokengram.Services
 {
@@ -53,27 +54,6 @@ namespace Tokengram.Services
             return user;
         }
 
-        public Dictionary<string, int> ParseVectorString(string vectorString)
-        {
-            var vector = new Dictionary<string, int>();
-
-            if (string.IsNullOrEmpty(vectorString))
-                return vector;
-
-            var keyValuePairs = vectorString.Split(';');
-
-            foreach (var pair in keyValuePairs)
-            {
-                var keyValue = pair.Split(':');
-                if (keyValue.Length == 2 && int.TryParse(keyValue[1], out int value))
-                {
-                    vector[keyValue[0]] = value;
-                }
-            }
-
-            return vector;
-        }
-
         public string SerializeVector(Dictionary<string, int> vector)
         {
             return string.Join(";", vector.Select(kv => $"{kv.Key}:{kv.Value}"));
@@ -81,14 +61,14 @@ namespace Tokengram.Services
 
         public string GetNewVector(string userVector, string nftVector, int actionCoefficient)
         {
-            var updatedVector = ParseVectorString(userVector);
+            var updatedVector = CosineSimilarityUtil.ParseVectorString(userVector);
 
             var totalSum = updatedVector.Values.Sum(); // Total sum of values in the vector
             var maxVectorSum = 100; // Maximum sum of the vector
             var maxWeight = maxVectorSum / updatedVector.Count; // Maximum weight for each tag
 
             // Update vector based on nftVector and actionCoefficient
-            foreach (var tagWeight in ParseVectorString(nftVector))
+            foreach (var tagWeight in CosineSimilarityUtil.ParseVectorString(nftVector))
             {
                 var tag = tagWeight.Key;
                 var weight = tagWeight.Value;

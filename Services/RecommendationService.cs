@@ -84,8 +84,8 @@ namespace Tokengram.Services
                 var postVector = nftQueryResult.NFT.NFTVector;
                 if (postVector != null)
                 {
-                    var fixedpostVector = CosineSimilarityUtil.ParseVector(postVector);
-                    var fixeduserVector = CosineSimilarityUtil.ParseVector(userPreferences);
+                    var fixedpostVector = CosineSimilarityUtil.ParseVectorString(postVector);
+                    var fixeduserVector = CosineSimilarityUtil.ParseVectorString(userPreferences);
                     var similarity = CosineSimilarityUtil.GetCosineSimilarity(fixeduserVector, fixedpostVector);
                     postsWithSimilarity.Add(
                         new PostWithCosineSimilarity
