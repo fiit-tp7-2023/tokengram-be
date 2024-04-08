@@ -23,7 +23,7 @@ namespace Tokengram.Infrastructure.ActionFilters
 
             User user =
                 await dbContext.Users.FirstOrDefaultAsync(x => x.Address == userAddressObj.ToString())
-                ?? throw new NotFoundException(Constants.ErrorMessages.POST_NOT_FOUND);
+                ?? throw new NotFoundException(Constants.ErrorMessages.USER_NOT_FOUND);
 
             context.HttpContext.Items[ItemKey] = user;
 
