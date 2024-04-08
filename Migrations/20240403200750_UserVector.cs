@@ -14,7 +14,7 @@ namespace Tokengram.Migrations
                 name: "user_vector",
                 table: "users",
                 type: "text",
-                nullable: false,
+                nullable: true,
                 defaultValue: ""
             );
         }

@@ -6,7 +6,7 @@ namespace Tokengram.Database.Tokengram.Entities
 
         public string? Username { get; set; }
 
-        public string UserVector { get; set; } = null!;
+        public string? UserVector { get; set; }
 
         public Guid Nonce { get; set; }
 
