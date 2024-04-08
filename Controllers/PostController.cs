@@ -18,13 +18,25 @@ namespace Tokengram.Controllers
         private readonly IPostService _postService;
         private readonly ICommentService _commentService;
 
-        public PostController(IMapper mapper, IPostService postService, ICommentService commentService)
+        private readonly IRecommendationService _recommendationService;
+
+        private readonly IUserService _userService;
+
+        public PostController(
+            IMapper mapper,
+            IPostService postService,
+            ICommentService commentService,
+            IUserService userService,
+            IRecommendationService recommendationService
+        )
         {
             _mapper = mapper;
             _postService = postService;
+            _userService = userService;
+            _recommendationService = recommendationService;
             _commentService = commentService;
         }
-
+        
         [HttpGet("")]
         public async Task<ActionResult<IEnumerable<UserPostResponseDTO>>> GetUserPosts(
             [FromQuery] PaginationRequestDTO request
@@ -34,6 +46,18 @@ namespace Tokengram.Controllers
 
             return Ok(_mapper.Map<IEnumerable<UserPostResponseDTO>>(result));
         }
+        
+        [HttpGet("hot-posts")]
+        public async Task<ActionResult<IEnumerable<UserPostResponseDTO>>> GetHotPosts(
+            [FromQuery] PaginationRequestDTO request
+        )
+        {
+            var userAddress = GetUserAddress();
+            var user = await _userService.GetUser(userAddress);
+            var result = await _recommendationService.GetHotPosts(user, request);
+
+            // return list of all posts
+            return Ok(_mapper.Map<IEnumerable<UserPostResponseDTO>>(result));
 
         [HttpPut("{postNFTAddress}/settings")]
         public async Task<ActionResult<BasicPostUserSettingsResponseDTO>> UpdatePostUserSettings(

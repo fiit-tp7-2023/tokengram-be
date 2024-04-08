@@ -15,10 +15,13 @@ namespace Tokengram.Services
         private readonly TokengramDbContext _dbContext;
         private readonly IMapper _mapper;
 
-        public CommentService(TokengramDbContext dbContext, IMapper mapper)
+        private readonly IUserService _userService;
+
+        public CommentService(TokengramDbContext dbContext, IMapper mapper, IUserService userService)
         {
             _dbContext = dbContext;
             _mapper = mapper;
+            _userService = userService;
         }
 
         public async Task<IEnumerable<CommentWithUserContext>> GetCommentsWithUserContext(
@@ -99,6 +102,9 @@ namespace Tokengram.Services
             post.CommentCount++;
             await _dbContext.SaveChangesAsync();
 
+            User user = await _userService.GetUser(userAddress);
+            await _userService.UpdateUserVectorByComment(user, post);
+
             return comment;
         }
 
@@ -127,6 +133,9 @@ namespace Tokengram.Services
             if (comment.ParentComment != null)
                 comment.ParentComment.CommentReplyCount--;
             await _dbContext.SaveChangesAsync();
+
+            User user = await _userService.GetUser(userAddress);
+            await _userService.UpdateUserVectorByUncomment(user, comment.Post);
         }
     }
 }

@@ -15,6 +15,9 @@ namespace Tokengram.Services
                 x => x.PostNFTAddress == post.NFTAddress && x.LikerAddress == userAddress
             );
 
+            User user = await _userService.GetUser(userAddress);
+            await _userService.UpdateUserVectorByLike(user, post);
+
             if (postLike != null)
                 throw new BadRequestException(Constants.ErrorMessages.POST_ALREADY_LIKED);
 
@@ -32,6 +35,9 @@ namespace Tokengram.Services
                 await _dbContext.PostLikes.FirstOrDefaultAsync(
                     x => x.PostNFTAddress == post.NFTAddress && x.LikerAddress == userAddress
                 ) ?? throw new BadRequestException(Constants.ErrorMessages.POST_NOT_LIKED);
+
+            User user = await _userService.GetUser(userAddress);
+            await _userService.UpdateUserVectorByUnlike(user, post);
 
             _dbContext.PostLikes.Remove(postLike);
             post.LikeCount--;

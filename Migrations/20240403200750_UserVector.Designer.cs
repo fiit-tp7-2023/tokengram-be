@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Tokengram.Database.Tokengram;
@@ -11,9 +12,11 @@ using Tokengram.Database.Tokengram;
 namespace Tokengram.Migrations
 {
     [DbContext(typeof(TokengramDbContext))]
-    partial class TokengramDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240403200750_UserVector")]
+    partial class UserVector
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -455,33 +458,6 @@ namespace Tokengram.Migrations
                     b.ToTable("users", (string)null);
                 });
 
-            modelBuilder.Entity("Tokengram.Database.Tokengram.Entities.UserFollow", b =>
-                {
-                    b.Property<string>("UserAddress")
-                        .HasMaxLength(42)
-                        .HasColumnType("character varying(42)")
-                        .HasColumnName("user_address");
-
-                    b.Property<string>("FollowedUserAddress")
-                        .HasMaxLength(42)
-                        .HasColumnType("character varying(42)")
-                        .HasColumnName("followed_user_address");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("UserAddress", "FollowedUserAddress");
-
-                    b.HasIndex("FollowedUserAddress");
-
-                    b.ToTable("user_follows", (string)null);
-                });
-
             modelBuilder.Entity("Tokengram.Database.Tokengram.Entities.Chat", b =>
                 {
                     b.HasOne("Tokengram.Database.Tokengram.Entities.User", "Admin")
@@ -639,25 +615,6 @@ namespace Tokengram.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Tokengram.Database.Tokengram.Entities.UserFollow", b =>
-                {
-                    b.HasOne("Tokengram.Database.Tokengram.Entities.User", "FollowedUser")
-                        .WithMany("Followers")
-                        .HasForeignKey("FollowedUserAddress")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Tokengram.Database.Tokengram.Entities.User", "User")
-                        .WithMany("Followings")
-                        .HasForeignKey("UserAddress")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FollowedUser");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Tokengram.Database.Tokengram.Entities.Chat", b =>
                 {
                     b.Navigation("ChatInvitations");
@@ -691,10 +648,6 @@ namespace Tokengram.Migrations
                     b.Navigation("CommentLikes");
 
                     b.Navigation("Comments");
-
-                    b.Navigation("Followers");
-
-                    b.Navigation("Followings");
 
                     b.Navigation("ManagedChats");
 

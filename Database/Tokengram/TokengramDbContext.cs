@@ -67,6 +67,8 @@ namespace Tokengram.Database.Tokengram
 
                 e.HasKey(x => x.Address);
 
+                e.Property(x => x.UserVector).HasColumnName("user_vector");
+
                 e.HasIndex(x => x.Username).IsUnique();
                 e.HasIndex(x => x.Nonce).IsUnique();
 

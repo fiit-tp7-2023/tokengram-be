@@ -15,6 +15,7 @@ using Tokengram.Models.Exceptions;
 using Microsoft.Extensions.Options;
 using Tokengram.Constants;
 using System.IdentityModel.Tokens.Jwt;
+using Tokengram.Models.QueryResults;
 
 namespace Tokengram.Services
 {
@@ -24,11 +25,22 @@ namespace Tokengram.Services
         private readonly EthereumMessageSigner _signer;
         private readonly JWTOptions _jwtOptions;
 
-        public AuthService(TokengramDbContext dbContext, IOptions<JWTOptions> jWTOptions)
+        private readonly INFTService _nftService;
+
+        private readonly IUserService _userService;
+
+        public AuthService(
+            TokengramDbContext dbContext,
+            IOptions<JWTOptions> jwtOptions,
+            INFTService nftService,
+            IUserService userService
+        )
         {
             _dbContext = dbContext;
             _signer = new EthereumMessageSigner();
-            _jwtOptions = jWTOptions.Value;
+            _userService = userService;
+            _nftService = nftService;
+            _jwtOptions = jwtOptions.Value;
         }
 
         public async Task<NonceMessageResponseDTO> GenerateNonceMessage(NonceRequestDTO request)
@@ -42,7 +54,25 @@ namespace Tokengram.Services
             await _dbContext.Users.AddAsync(user);
             await _dbContext.SaveChangesAsync();
 
+            var allNfts = await _nftService.GetOwnedNFTs(
+                new PaginationRequestDTO { PageNumber = 1, PageSize = 100 },
+                request.Address
+            );
+
+            var newNfts = allNfts.Where(nft => !_dbContext.PostUserSettings.Any(pus => pus.PostNFTAddress == nft));
+
+            foreach (var nft in newNfts)
+            {
+                var nftQueryResults = await FetchNFTQueryResults(nft);
+                await _userService.UpdateUserVectorByNewNFT(user, nftQueryResults.NFT);
+            }
+
             return new NonceMessageResponseDTO { Message = user.GetNonceMessage() };
+        }
+
+        private async Task<NFTQueryResult> FetchNFTQueryResults(string nftAddress)
+        {
+            return await _nftService.GetNFT(nftAddress);
         }
 
         public async Task<TokensResponseDTO> Login(LoginRequestDTO request)
