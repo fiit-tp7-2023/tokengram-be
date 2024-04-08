@@ -18,29 +18,23 @@ namespace Tokengram.Services
             _dbContext = dbContext;
         }
 
-        public async Task<IEnumerable<UserFollow>> GetUserFollowers(string userAddress, PaginationRequestDTO request)
+        public async Task<IEnumerable<UserFollow>> GetUserFollowers(User user, PaginationRequestDTO request)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Address == userAddress)
-                ?? throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
-
             return await _dbContext.UserFollows
                 .Include(x => x.User)
                 .Include(x => x.FollowedUser)
-                .Where(x => x.FollowedUserAddress == userAddress)
+                .Where(x => x.FollowedUserAddress == user.Address)
                 .OrderByDescending(x => x.CreatedAt)
                 .Paginate(request.PageNumber, request.PageSize)
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<UserFollow>> GetUserFollowings(string userAddress, PaginationRequestDTO request)
+        public async Task<IEnumerable<UserFollow>> GetUserFollowings(User user, PaginationRequestDTO request)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Address == userAddress)
-                ?? throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
-
             return await _dbContext.UserFollows
                 .Include(x => x.User)
                 .Include(x => x.FollowedUser)
-                .Where(x => x.UserAddress == userAddress)
+                .Where(x => x.UserAddress == user.Address)
                 .OrderByDescending(x => x.CreatedAt)
                 .Paginate(request.PageNumber, request.PageSize)
                 .ToListAsync();

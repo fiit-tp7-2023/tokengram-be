@@ -58,6 +58,7 @@ namespace Tokengram.Controllers
 
             // return list of all posts
             return Ok(_mapper.Map<IEnumerable<UserPostResponseDTO>>(result));
+        }
 
         [HttpPut("{postNFTAddress}/settings")]
         public async Task<ActionResult<BasicPostUserSettingsResponseDTO>> UpdatePostUserSettings(
