@@ -14,13 +14,15 @@ using Tokengram.Database.Tokengram;
 using Microsoft.EntityFrameworkCore;
 using Tokengram.Models.Config;
 using System.Text;
-using Tokengram.Middlewares;
+using Tokengram.Infrastructure;
 using Tokengram.Hubs;
 using Tokengram.Models.Hubs;
 using Tokengram.Models.Mappings;
 using Microsoft.AspNetCore.SignalR;
 using Tokengram.Database.Indexer;
 using AutoMapper;
+using Tokengram.Infrastructure.HubFilters;
+using Tokengram.Infrastructure.Middlewares;
 
 namespace Tokengram
 {
@@ -79,6 +81,7 @@ namespace Tokengram
                         cfg.AddProfile(new CommentLikeProfile());
                         cfg.AddProfile(new PostLikeProfile());
                         cfg.AddProfile(new PostUserSettingsProfile());
+                        cfg.AddProfile(new FollowerProfile());
                     }).CreateMapper()
             );
 
@@ -88,12 +91,18 @@ namespace Tokengram
             builder.Services.AddScoped<IPostService, PostService>();
             builder.Services.AddScoped<ICommentService, CommentService>();
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IFollowerService, FollowerService>();
             builder.Services.AddSingleton<List<ConnectedUser>>();
             builder.Services.AddSingleton<List<ChatGroup>>();
 
             builder.Services.AddControllers();
+
             builder.Services.AddSignalR(options =>
             {
+                options.AddFilter<ExceptionHandlerHubFilter>();
+                options.AddFilter<BindChatHubFilter>();
+                options.AddFilter<BindChatMessageHubFilter>();
+                options.AddFilter<BindUserHubFilter>();
                 options.AddFilter<ValidationHubFilter>();
             });
 
@@ -160,6 +169,20 @@ namespace Tokengram
                             Encoding.ASCII.GetBytes(jwtOptionsSection["Secret"]!)
                         ),
                         ValidateLifetime = true,
+                    };
+                    x.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+
+                            var path = context.HttpContext.Request.Path;
+                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                            {
+                                context.Token = accessToken;
+                            }
+                            return Task.CompletedTask;
+                        }
                     };
                 });
 

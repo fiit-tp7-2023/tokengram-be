@@ -34,6 +34,10 @@ namespace Tokengram.Database.Tokengram.Entities
 
         public ICollection<PostUserSettings> PostUserSettings = new List<PostUserSettings>();
 
+        public ICollection<UserFollow> Followers { get; set; } = new List<UserFollow>();
+
+        public ICollection<UserFollow> Followings { get; set; } = new List<UserFollow>();
+
         public string GetNonceMessage()
         {
             return $"Tokengram authentication\n\nNonce - {Nonce}\n\nSign this message to authenticate your account. This nonce is unique to this authentication request and helps ensure the security of your account.";

@@ -1,10 +1,12 @@
 using System.Net;
 using Tokengram.Models.Validation;
 
-namespace Tokengram.Models.DTOS.HTTP.Responses
+namespace Tokengram.Models.DTOS.Shared.Responses
 {
     public class ErrorResponseDTO
     {
+        public bool IsError { get; set; } = true;
+
         public HttpStatusCode StatusCode { get; set; }
 
         public string Message { get; set; } = null!;

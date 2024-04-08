@@ -26,16 +26,13 @@ namespace Tokengram.Services
 
         public async Task<IEnumerable<CommentWithUserContext>> GetCommentsWithUserContext(
             PaginationRequestDTO request,
-            string postNFTAddress,
+            Post post,
             string userAddress
         )
         {
-            Post post =
-                await _dbContext.Posts.FirstOrDefaultAsync(x => x.NFTAddress == postNFTAddress)
-                ?? throw new NotFoundException(Constants.ErrorMessages.POST_NOT_FOUND);
             IEnumerable<Comment> comments = await _dbContext.Comments
                 .Include(x => x.Commenter)
-                .Where(x => x.PostNFTAddress == postNFTAddress)
+                .Where(x => x.PostNFTAddress == post.NFTAddress)
                 .OrderByDescending(x => x.LikeCount)
                 .ThenBy(x => x.CreatedAt)
                 .Paginate(request.PageNumber, request.PageSize)
@@ -56,16 +53,13 @@ namespace Tokengram.Services
 
         public async Task<IEnumerable<CommentWithUserContext>> GetCommentRepliesWithUserContext(
             PaginationRequestDTO request,
-            long commentId,
+            Comment comment,
             string userAddress
         )
         {
-            Comment comment =
-                await _dbContext.Comments.FirstOrDefaultAsync(x => x.Id == commentId)
-                ?? throw new NotFoundException(Constants.ErrorMessages.COMMENT_NOT_FOUND);
             IEnumerable<Comment> comments = await _dbContext.Comments
                 .Include(x => x.Commenter)
-                .Where(x => x.ParentCommentId == commentId)
+                .Where(x => x.ParentCommentId == comment.Id)
                 .OrderBy(x => x.CreatedAt)
                 .Paginate(request.PageNumber, request.PageSize)
                 .ToListAsync();
@@ -83,17 +77,13 @@ namespace Tokengram.Services
             });
         }
 
-        public async Task<Comment> CreateComment(CommentRequestDTO request, string postNFTAddress, string userAddress)
+        public async Task<Comment> CreateComment(CommentRequestDTO request, Post post, string userAddress)
         {
-            Post post =
-                await _dbContext.Posts.FirstOrDefaultAsync(x => x.NFTAddress == postNFTAddress)
-                ?? throw new NotFoundException(Constants.ErrorMessages.POST_NOT_FOUND);
-
             if (request.ParentCommentId != null)
             {
                 Comment parrentComment =
                     await _dbContext.Comments.FirstOrDefaultAsync(
-                        x => x.Id == request.ParentCommentId && x.PostNFTAddress == postNFTAddress
+                        x => x.Id == request.ParentCommentId && x.PostNFTAddress == post.NFTAddress
                     ) ?? throw new NotFoundException(Constants.ErrorMessages.COMMENT_NOT_FOUND);
                 if (parrentComment.ParentCommentId != null)
                     throw new BadRequestException(Constants.ErrorMessages.COMMENT_REPLY_PARENT_COMMENT_NOT_BASE);
@@ -118,11 +108,8 @@ namespace Tokengram.Services
             return comment;
         }
 
-        public async Task<Comment> UpdateComment(CommentUpdateRequestDTO request, long commentId, string userAddress)
+        public async Task<Comment> UpdateComment(CommentUpdateRequestDTO request, Comment comment, string userAddress)
         {
-            Comment comment =
-                await _dbContext.Comments.FirstOrDefaultAsync(x => x.Id == commentId)
-                ?? throw new NotFoundException(Constants.ErrorMessages.COMMENT_NOT_FOUND);
             if (comment.CommenterAddress != userAddress)
                 throw new ForbiddenException(Constants.ErrorMessages.COMMENT_NOT_COMMENTER);
 
@@ -132,14 +119,12 @@ namespace Tokengram.Services
             return comment;
         }
 
-        public async Task DeleteComment(long commentId, string userAddress)
+        public async Task DeleteComment(Comment comment, string userAddress)
         {
-            Comment comment =
-                await _dbContext.Comments
-                    .Include(x => x.Post)
-                    .Include(x => x.ParentComment)
-                    .FirstOrDefaultAsync(x => x.Id == commentId)
-                ?? throw new NotFoundException(Constants.ErrorMessages.COMMENT_NOT_FOUND);
+            comment = await _dbContext.Comments
+                .Include(x => x.Post)
+                .Include(x => x.ParentComment)
+                .FirstAsync(x => x.Id == comment.Id);
             if (comment.CommenterAddress != userAddress)
                 throw new ForbiddenException(Constants.ErrorMessages.COMMENT_NOT_COMMENTER);
 

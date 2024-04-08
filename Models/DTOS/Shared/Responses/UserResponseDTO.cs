@@ -7,5 +7,9 @@ namespace Tokengram.Models.DTOS.Shared.Responses
         public string? Username { get; set; }
 
         public string? ProfilePicture { get; set; }
+
+        public long FollowersCount { get; set; }
+
+        public long FollowingCount { get; set; }
     }
 }

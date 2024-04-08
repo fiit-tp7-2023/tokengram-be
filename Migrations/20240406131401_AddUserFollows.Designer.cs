@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Tokengram.Database.Tokengram;
@@ -11,9 +12,11 @@ using Tokengram.Database.Tokengram;
 namespace Tokengram.Migrations
 {
     [DbContext(typeof(TokengramDbContext))]
-    partial class TokengramDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240406131401_AddUserFollows")]
+    partial class AddUserFollows
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -433,11 +436,6 @@ namespace Tokengram.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
-
-                    b.Property<string>("UserVector")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("user_vector");
 
                     b.Property<string>("Username")
                         .HasMaxLength(30)

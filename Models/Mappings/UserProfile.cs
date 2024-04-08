@@ -22,6 +22,14 @@ namespace Tokengram.Models.Mappings
                             (src, dst, d, context) =>
                                 src.ProfilePicturePath != null ? uploadsUrlPath + src.ProfilePicturePath : null
                         )
+                )
+                .ForMember(
+                    dest => dest.FollowersCount,
+                    opt => opt.MapFrom(src => src.Followers.Count)
+                )
+                .ForMember(
+                    dest => dest.FollowingCount,
+                    opt => opt.MapFrom(src => src.Followings.Count)
                 );
 
             CreateMap<User, UserChatProfileResponseDTO>()

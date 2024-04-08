@@ -6,7 +6,7 @@ namespace Tokengram.Database.Tokengram
 {
     public class TokengramDbContext : DbContext
     {
-        const int ADDRESS_MAX_LENGTH = 42;
+        const int ADDRESS_MAX_LENGTH = ProfileSettings.MAX_ADDRESS_LENGTH;
         const int USERNAME_MAX_LENGTH = ProfileSettings.MAX_USERNAME_LENGTH;
 
         public TokengramDbContext(DbContextOptions<TokengramDbContext> options)
@@ -119,6 +119,14 @@ namespace Tokengram.Database.Tokengram
                     .HasForeignKey(x => x.LikerAddress)
                     .OnDelete(DeleteBehavior.Cascade);
                 e.HasMany(x => x.PostUserSettings)
+                    .WithOne(x => x.User)
+                    .HasForeignKey(x => x.UserAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasMany(x => x.Followers)
+                    .WithOne(x => x.FollowedUser)
+                    .HasForeignKey (x => x.FollowedUserAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasMany(x => x.Followings)
                     .WithOne(x => x.User)
                     .HasForeignKey(x => x.UserAddress)
                     .OnDelete(DeleteBehavior.Cascade);
@@ -353,6 +361,25 @@ namespace Tokengram.Database.Tokengram
                     .HasForeignKey(x => x.UserAddress)
                     .OnDelete(DeleteBehavior.Cascade);
             });
+
+            modelBuilder.Entity<UserFollow>(e =>
+            {
+                e.ToTable("user_follows");
+                
+                e.Property(x => x.UserAddress).HasColumnName("user_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.FollowedUserAddress).HasColumnName("followed_user_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+
+                e.HasKey(x => new { x.UserAddress, x.FollowedUserAddress });
+
+                e.HasOne(x => x.User)
+                    .WithMany(x => x.Followings)
+                    .HasForeignKey(x => x.UserAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.FollowedUser)
+                    .WithMany(x => x.Followers)
+                    .HasForeignKey(x => x.FollowedUserAddress)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
         }
 
         public DbSet<User> Users { get; set; }
@@ -374,5 +401,7 @@ namespace Tokengram.Database.Tokengram
         public DbSet<PostLike> PostLikes { get; set; }
 
         public DbSet<PostUserSettings> PostUserSettings { get; set; }
+
+        public DbSet<UserFollow> UserFollows { get; set; }
     }
 }

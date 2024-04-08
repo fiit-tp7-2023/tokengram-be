@@ -14,10 +14,10 @@ namespace Tokengram.Services.Interfaces
 
         Task<IEnumerable<UserPost>> GetUserPosts(PaginationRequestDTO request, string userAddress);
 
-        Task<PostLike> LikePost(string postNFTAddress, string userAddress);
+        Task<PostLike> LikePost(Post post, string userAddress);
 
-        Task UnlikePost(string postNFTAddress, string userAddress);
+        Task UnlikePost(Post post, string userAddress);
 
-        Task<IEnumerable<PostLike>> GetPostLikes(PaginationRequestDTO request, string postNFTAddress);
+        Task<IEnumerable<PostLike>> GetPostLikes(PaginationRequestDTO request, Post post);
     }
 }
