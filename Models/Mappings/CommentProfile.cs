@@ -9,11 +9,15 @@ namespace Tokengram.Models.Mappings
     {
         public CommentProfile()
         {
-            CreateMap<Comment, BasicCommentResponseDTO>();
+            CreateMap<Comment, CommentResponseDTO>();
 
-            CreateMap<Comment, CommentWithUserContext>();
-
-            CreateMap<CommentWithUserContext, CommentWithUserContextResponseDTO>();
+            CreateMap<CommentWithUserContext, CommentResponseDTO>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(x => x.Comment.Id))
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(x => x.Comment.Content))
+                .ForMember(dest => dest.Commenter, opt => opt.MapFrom(x => x.Comment.Commenter))
+                .ForMember(dest => dest.PostNFTAddress, opt => opt.MapFrom(x => x.Comment.PostNFTAddress))
+                .ForMember(x => x.ParentCommentId, opt => opt.MapFrom(x => x.Comment.ParentCommentId))
+                .ForMember(x => x.CreatedAt, opt => opt.MapFrom(x => x.Comment.CreatedAt));
         }
     }
 }

@@ -2,8 +2,6 @@ namespace Tokengram.Database.Tokengram.Entities
 {
     public class CommentLike : BaseEntity
     {
-        public long Id { get; set; }
-
         public string LikerAddress { get; set; } = null!;
 
         public long CommentId { get; set; }

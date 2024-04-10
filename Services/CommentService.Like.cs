@@ -11,17 +11,18 @@ namespace Tokengram.Services
     {
         public async Task<CommentLike> LikeComment(Comment comment, string userAddress)
         {
-            CommentLike? commentLike = await _dbContext.CommentLikes.FirstOrDefaultAsync(
+            CommentLike? commentLike = await _tokengramDbContext.CommentLikes.FirstOrDefaultAsync(
                 x => x.CommentId == comment.Id && x.LikerAddress == userAddress
             );
 
             if (commentLike != null)
                 throw new BadRequestException(Constants.ErrorMessages.COMMENT_ALREADY_LIKED);
 
-            commentLike = new() { Comment = comment, LikerAddress = userAddress };
-            await _dbContext.CommentLikes.AddAsync(commentLike);
-            comment.LikeCount++;
-            await _dbContext.SaveChangesAsync();
+            User liker = await _tokengramDbContext.Users.FirstAsync(x => x.Address == userAddress);
+
+            commentLike = new() { Comment = comment, Liker = liker };
+            await _tokengramDbContext.CommentLikes.AddAsync(commentLike);
+            await _tokengramDbContext.SaveChangesAsync();
 
             return commentLike;
         }
@@ -29,18 +30,17 @@ namespace Tokengram.Services
         public async Task UnlikeComment(Comment comment, string userAddress)
         {
             CommentLike commentLike =
-                await _dbContext.CommentLikes.FirstOrDefaultAsync(
+                await _tokengramDbContext.CommentLikes.FirstOrDefaultAsync(
                     x => x.CommentId == comment.Id && x.LikerAddress == userAddress
                 ) ?? throw new BadRequestException(Constants.ErrorMessages.COMMENT_NOT_LIKED);
 
-            _dbContext.CommentLikes.Remove(commentLike);
-            comment.LikeCount--;
-            await _dbContext.SaveChangesAsync();
+            _tokengramDbContext.CommentLikes.Remove(commentLike);
+            await _tokengramDbContext.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<CommentLike>> GetCommentLikes(PaginationRequestDTO request, Comment comment)
         {
-            IEnumerable<CommentLike> commentLikes = await _dbContext.CommentLikes
+            IEnumerable<CommentLike> commentLikes = await _tokengramDbContext.CommentLikes
                 .Include(x => x.Liker)
                 .Where(x => x.CommentId == comment.Id)
                 .OrderBy(x => x.CreatedAt)

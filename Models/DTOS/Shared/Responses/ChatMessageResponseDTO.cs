@@ -10,7 +10,7 @@ namespace Tokengram.Models.DTOS.Shared.Responses
 
         public long? ParentMessageId { get; set; }
 
-        public UserResponseDTO Sender { get; set; } = null!;
+        public BasicUserResponseDTO Sender { get; set; } = null!;
 
         public DateTime CreatedAt { get; set; }
     }

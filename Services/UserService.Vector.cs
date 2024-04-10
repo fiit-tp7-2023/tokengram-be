@@ -17,7 +17,7 @@ namespace Tokengram.Services
 
             user.UserVector = GetNewVector(user.UserVector, nftVector, actionCoefficient);
 
-            await _dbContext.SaveChangesAsync();
+            await _tokengramDbContext.SaveChangesAsync();
 
             return user;
         }
@@ -50,7 +50,7 @@ namespace Tokengram.Services
                 UpdatingVectorCoefficients.NEW_NFT_COEFFICIENT
             );
 
-            await _dbContext.SaveChangesAsync();
+            await _tokengramDbContext.SaveChangesAsync();
             return user;
         }
 

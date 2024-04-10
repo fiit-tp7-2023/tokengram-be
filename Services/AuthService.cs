@@ -21,7 +21,7 @@ namespace Tokengram.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly TokengramDbContext _dbContext;
+        private readonly TokengramDbContext _tokengramDbContext;
         private readonly EthereumMessageSigner _signer;
         private readonly JWTOptions _jwtOptions;
 
@@ -30,13 +30,13 @@ namespace Tokengram.Services
         private readonly IUserService _userService;
 
         public AuthService(
-            TokengramDbContext dbContext,
+            TokengramDbContext tokengramDbContext,
             IOptions<JWTOptions> jwtOptions,
             INFTService nftService,
             IUserService userService
         )
         {
-            _dbContext = dbContext;
+            _tokengramDbContext = tokengramDbContext;
             _signer = new EthereumMessageSigner();
             _userService = userService;
             _nftService = nftService;
@@ -45,21 +45,23 @@ namespace Tokengram.Services
 
         public async Task<NonceMessageResponseDTO> GenerateNonceMessage(NonceRequestDTO request)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Address == request.Address);
+            var user = await _tokengramDbContext.Users.FirstOrDefaultAsync(x => x.Address == request.Address);
 
             if (user != null)
                 return new NonceMessageResponseDTO { Message = user.GetNonceMessage() };
 
             user = new User { Address = request.Address, Nonce = Guid.NewGuid() };
-            await _dbContext.Users.AddAsync(user);
-            await _dbContext.SaveChangesAsync();
+            await _tokengramDbContext.Users.AddAsync(user);
+            await _tokengramDbContext.SaveChangesAsync();
 
             var allNfts = await _nftService.GetOwnedNFTs(
                 new PaginationRequestDTO { PageNumber = 1, PageSize = 100 },
                 request.Address
             );
 
-            var newNfts = allNfts.Where(nft => !_dbContext.PostUserSettings.Any(pus => pus.PostNFTAddress == nft));
+            var newNfts = allNfts.Where(
+                nft => !_tokengramDbContext.PostUserSettings.Any(pus => pus.PostNFTAddress == nft)
+            );
 
             foreach (var nft in newNfts)
             {
@@ -78,7 +80,7 @@ namespace Tokengram.Services
         public async Task<TokensResponseDTO> Login(LoginRequestDTO request)
         {
             var user =
-                await _dbContext.Users.FirstOrDefaultAsync(x => x.Address == request.Address)
+                await _tokengramDbContext.Users.FirstOrDefaultAsync(x => x.Address == request.Address)
                 ?? throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
             var signerAddress = "";
 
@@ -95,7 +97,7 @@ namespace Tokengram.Services
                 throw new BadRequestException(ErrorMessages.SIGNATURE_INVALID);
 
             var x = user.Nonce = Guid.NewGuid();
-            await _dbContext.SaveChangesAsync();
+            await _tokengramDbContext.SaveChangesAsync();
 
             return GenerateTokens(user);
         }
@@ -103,7 +105,7 @@ namespace Tokengram.Services
         public async Task<TokensResponseDTO> RefreshToken(RefreshTokenRequestDTO request)
         {
             var refreshToken =
-                await _dbContext.RefreshTokens
+                await _tokengramDbContext.RefreshTokens
                     .Include(x => x.User)
                     .FirstOrDefaultAsync(x => x.Token == request.RefreshToken)
                 ?? throw new BadRequestException(ErrorMessages.REFRESH_TOKEN_INVALID);
@@ -115,7 +117,7 @@ namespace Tokengram.Services
                 throw new BadRequestException(ErrorMessages.REFRESH_TOKEN_BLACKLISTED);
 
             refreshToken.BlackListedAt = DateTime.UtcNow;
-            await _dbContext.SaveChangesAsync();
+            await _tokengramDbContext.SaveChangesAsync();
 
             return GenerateTokens(refreshToken.User);
         }
@@ -138,8 +140,8 @@ namespace Tokengram.Services
                     Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
                     ExpiresAt = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenValidityInDays)
                 };
-            _dbContext.Add(refreshToken);
-            _dbContext.SaveChanges();
+            _tokengramDbContext.Add(refreshToken);
+            _tokengramDbContext.SaveChanges();
 
             return refreshToken.Token;
         }

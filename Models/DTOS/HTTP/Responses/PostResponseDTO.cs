@@ -1,9 +1,7 @@
 namespace Tokengram.Models.DTOS.HTTP.Responses
 {
-    public class UserPostResponseDTO
+    public class PostResponseDTO
     {
-        public long Id { get; set; }
-
         public string OwnerAddress { get; set; } = null!;
 
         public NFTResponseDTO NFT { get; set; } = null!;

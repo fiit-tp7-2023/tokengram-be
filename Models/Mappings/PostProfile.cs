@@ -1,5 +1,4 @@
 using AutoMapper;
-using Tokengram.Database.Tokengram.Entities;
 using Tokengram.Models.CustomEntities;
 using Tokengram.Models.DTOS.HTTP.Responses;
 
@@ -9,9 +8,17 @@ namespace Tokengram.Models.Mappings
     {
         public PostProfile()
         {
-            CreateMap<Post, UserPost>();
-
-            CreateMap<UserPost, UserPostResponseDTO>();
+            CreateMap<PostWithUserContext, PostResponseDTO>()
+                .ForMember(dest => dest.NFT, opt => opt.MapFrom(x => x.Post.NFTQueryResult))
+                .ForMember(
+                    dest => dest.Description,
+                    opt =>
+                        opt.MapFrom(x => x.Post.PostUserSettings != null ? x.Post.PostUserSettings.Description : null)
+                )
+                .ForMember(
+                    dest => dest.IsVisible,
+                    opt => opt.MapFrom(x => x.Post.PostUserSettings != null && x.Post.PostUserSettings.IsVisible)
+                );
         }
     }
 }

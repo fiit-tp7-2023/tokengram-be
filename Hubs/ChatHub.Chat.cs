@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Neo4jClient.Extensions;
 using Tokengram.Database.Tokengram.Entities;
 using Tokengram.Models.DTOS.WS.Requests;
 using Tokengram.Hubs.Interfaces;
@@ -47,12 +46,18 @@ namespace Tokengram.Hubs
             await _dbContext.SaveChangesAsync();
 
             ReceivedChatInvitationResponseDTO chatInvitationResponse =
-                new() { Chat = _mapper.Map<BasicChatResponseDTO>(chat), Sender = _mapper.Map<UserResponseDTO>(sender) };
+                new()
+                {
+                    Chat = _mapper.Map<BasicChatResponseDTO>(chat),
+                    Sender = _mapper.Map<BasicUserResponseDTO>(sender)
+                };
 
             await Clients
                 .AllExcept(
                     _connectedUsers
-                        .Where(x => x.Address.NotIn(request.UserAddresses.Where(address => address != sender.Address)))
+                        .Where(
+                            x => !request.UserAddresses.Where(address => address != sender.Address).Contains(x.Address)
+                        )
                         .Select(x => x.ConnectionId)
                 )
                 .ReceivedChatInvitation(chatInvitationResponse);
@@ -99,7 +104,7 @@ namespace Tokengram.Hubs
                 .ReceivedChatInvitation(_mapper.Map<ReceivedChatInvitationResponseDTO>(chatInvitation));
             await Clients
                 .OthersInGroup(chat.Id.ToString())
-                .AdminInvitedUser(chat.Id, _mapper.Map<UserResponseDTO>(invitedUser));
+                .AdminInvitedUser(chat.Id, _mapper.Map<BasicUserResponseDTO>(invitedUser));
         }
 
         [BindChatHub]
@@ -131,7 +136,7 @@ namespace Tokengram.Hubs
                 await _dbContext.SaveChangesAsync();
                 await Clients
                     .Group(chat.Id.ToString())
-                    .UserJoinedChat(chat.Id, _mapper.Map<UserResponseDTO>(respondingUser));
+                    .UserJoinedChat(chat.Id, _mapper.Map<BasicUserResponseDTO>(respondingUser));
                 await SendChatProfileDeviceSync();
                 await AddUserConnectionsToChatGroup(chat);
 
@@ -143,7 +148,7 @@ namespace Tokengram.Hubs
                 await _dbContext.SaveChangesAsync();
                 await Clients
                     .Group(chat.Id.ToString())
-                    .UserDeclinedChatInvitation(chat.Id, _mapper.Map<UserResponseDTO>(respondingUser));
+                    .UserDeclinedChatInvitation(chat.Id, _mapper.Map<BasicUserResponseDTO>(respondingUser));
                 await SendChatProfileDeviceSync();
 
                 return null;
@@ -178,7 +183,7 @@ namespace Tokengram.Hubs
             chat.AdminAddress = admin.Address;
             await _dbContext.SaveChangesAsync();
 
-            await Clients.OthersInGroup(chat.Id.ToString()).NewAdmin(chat.Id, _mapper.Map<UserResponseDTO>(admin));
+            await Clients.OthersInGroup(chat.Id.ToString()).NewAdmin(chat.Id, _mapper.Map<BasicUserResponseDTO>(admin));
         }
 
         [BindChatHub]
@@ -236,11 +241,13 @@ namespace Tokengram.Hubs
             {
                 if (newAdminPromoted)
                 {
-                    await Clients.Group(chat.Id.ToString()).NewAdmin(chat.Id, _mapper.Map<UserResponseDTO>(chat.Admin));
+                    await Clients
+                        .Group(chat.Id.ToString())
+                        .NewAdmin(chat.Id, _mapper.Map<BasicUserResponseDTO>(chat.Admin));
                 }
                 await Clients
                     .Group(chat.Id.ToString())
-                    .UserLeftChat(chat.Id, _mapper.Map<UserResponseDTO>(leavingUser));
+                    .UserLeftChat(chat.Id, _mapper.Map<BasicUserResponseDTO>(leavingUser));
             }
 
             await SendChatProfileDeviceSync();

@@ -2,8 +2,6 @@ namespace Tokengram.Database.Tokengram.Entities
 {
     public class PostLike : BaseEntity
     {
-        public long Id { get; set; }
-
         public string LikerAddress { get; set; } = null!;
 
         public string PostNFTAddress { get; set; } = null!;

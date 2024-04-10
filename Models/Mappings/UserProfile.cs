@@ -1,6 +1,8 @@
 using AutoMapper;
 using Tokengram.Database.Tokengram.Entities;
 using Tokengram.Models.DTOS.Shared.Responses;
+using Tokengram.Models.DTOS.HTTP.Responses;
+using Tokengram.Models.CustomEntities;
 
 namespace Tokengram.Models.Mappings
 {
@@ -14,7 +16,7 @@ namespace Tokengram.Models.Mappings
                 uploadsUrlPath += "/";
             }
 
-            CreateMap<User, UserResponseDTO>()
+            CreateMap<User, BasicUserResponseDTO>()
                 .ForMember(
                     dest => dest.ProfilePicture,
                     opt =>
@@ -22,15 +24,21 @@ namespace Tokengram.Models.Mappings
                             (src, dst, d, context) =>
                                 src.ProfilePicturePath != null ? uploadsUrlPath + src.ProfilePicturePath : null
                         )
-                )
-                .ForMember(
-                    dest => dest.FollowersCount,
-                    opt => opt.MapFrom(src => src.Followers.Count)
-                )
-                .ForMember(
-                    dest => dest.FollowingCount,
-                    opt => opt.MapFrom(src => src.Followings.Count)
                 );
+
+            CreateMap<UserWithUserContext, UserResponseDTO>()
+                .ForMember(
+                    dest => dest.ProfilePicture,
+                    opt =>
+                        opt.MapFrom(
+                            (src, dst, d, context) =>
+                                src.User.ProfilePicturePath != null
+                                    ? uploadsUrlPath + src.User.ProfilePicturePath
+                                    : null
+                        )
+                )
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(x => x.User.Address))
+                .ForMember(dest => dest.Username, opt => opt.MapFrom(x => x.User.Username));
 
             CreateMap<User, UserChatProfileResponseDTO>()
                 .ForMember(

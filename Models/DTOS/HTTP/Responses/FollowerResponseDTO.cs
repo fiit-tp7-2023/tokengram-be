@@ -4,7 +4,8 @@ namespace Tokengram.Models.DTOS.HTTP.Responses
 {
     public class FollowerResponseDTO
     {
-        public UserResponseDTO User { get; set; } = null!;
+        public string FollowedUserAddress { get; set; } = null!;
+        public BasicUserResponseDTO Follower { get; set; } = null!;
         public DateTime FollowingSince { get; set; }
     }
 }

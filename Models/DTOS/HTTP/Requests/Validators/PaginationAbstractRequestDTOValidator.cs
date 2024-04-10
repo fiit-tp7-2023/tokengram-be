@@ -4,7 +4,7 @@ using Tokengram.Constants;
 namespace Tokengram.Models.DTOS.HTTP.Requests.Validators
 {
     public class PaginationAbstractRequestDTOValidator<T> : AbstractValidator<T>
-        where T : PaginationRequestDTO
+        where T : PaginationAbstractRequestDTO
     {
         public PaginationAbstractRequestDTOValidator()
         {

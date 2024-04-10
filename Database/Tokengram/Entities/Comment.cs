@@ -12,10 +12,6 @@ namespace Tokengram.Database.Tokengram.Entities
 
         public long? ParentCommentId { get; set; }
 
-        public int CommentReplyCount { get; set; } = 0;
-
-        public int LikeCount { get; set; } = 0;
-
         public User Commenter { get; set; } = null!;
 
         public Post Post { get; set; } = null!;

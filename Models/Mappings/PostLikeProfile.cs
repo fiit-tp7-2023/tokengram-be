@@ -8,8 +8,6 @@ namespace Tokengram.Models.Mappings
     {
         public PostLikeProfile()
         {
-            CreateMap<PostLike, BasicPostLikeResponseDTO>();
-
             CreateMap<PostLike, PostLikeResponseDTO>();
         }
     }

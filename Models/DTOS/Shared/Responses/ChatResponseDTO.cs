@@ -10,11 +10,11 @@ namespace Tokengram.Models.DTOS.Shared.Responses
 
         public ChatMessageResponseDTO? LastChatMessage { get; set; }
 
-        public UserResponseDTO Admin { get; set; } = null!;
+        public BasicUserResponseDTO Admin { get; set; } = null!;
 
         public ChatTypeEnum Type { get; set; }
 
-        public IEnumerable<UserResponseDTO> Users { get; set; } = new List<UserResponseDTO>();
+        public IEnumerable<BasicUserResponseDTO> Users { get; set; } = new List<BasicUserResponseDTO>();
 
         public IEnumerable<ChatInvitationResponseDTO> ChatInvitations { get; set; } =
             new List<ChatInvitationResponseDTO>();

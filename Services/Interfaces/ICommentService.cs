@@ -6,13 +6,13 @@ namespace Tokengram.Services.Interfaces
 {
     public interface ICommentService
     {
-        Task<IEnumerable<CommentWithUserContext>> GetCommentsWithUserContext(
+        Task<IEnumerable<CommentWithUserContext>> GetComments(
             PaginationRequestDTO request,
             Post post,
             string userAddress
         );
 
-        Task<IEnumerable<CommentWithUserContext>> GetCommentRepliesWithUserContext(
+        Task<IEnumerable<CommentWithUserContext>> GetCommentReplies(
             PaginationRequestDTO request,
             Comment comment,
             string userAddress
@@ -20,7 +20,11 @@ namespace Tokengram.Services.Interfaces
 
         Task<Comment> CreateComment(CommentRequestDTO request, Post post, string userAddress);
 
-        Task<Comment> UpdateComment(CommentUpdateRequestDTO request, Comment comment, string userAddress);
+        Task<CommentWithUserContext> UpdateComment(
+            CommentUpdateRequestDTO request,
+            Comment comment,
+            string userAddress
+        );
 
         Task DeleteComment(Comment comment, string userAddress);
 
