@@ -1,4 +1,5 @@
 using Neo4jClient.Cypher;
+using System.Linq.Expressions;
 
 namespace Tokengram.Extensions
 {
@@ -80,6 +81,15 @@ namespace Tokengram.Extensions
         public static IQueryable<T> Paginate<T>(this IQueryable<T> queryable, int pageNumber, int pageSize)
         {
             return queryable.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+        }
+
+        public static IQueryable<T> WhereIf<T>(
+            this IQueryable<T> queryable,
+            bool condition,
+            Expression<Func<T, bool>> predicate
+        )
+        {
+            return condition ? queryable.Where(predicate) : queryable;
         }
     }
 }

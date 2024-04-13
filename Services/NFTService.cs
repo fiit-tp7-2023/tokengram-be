@@ -53,8 +53,8 @@ namespace Tokengram.Services
         {
             return await _indexerDbContext.NFTOwners
                 .Where(x => x.OwnerId == userAddress)
+                .OrderByDescending(x => x.AcquiredAt)
                 .Select(x => x.NFTId!)
-                .OrderBy(x => x)
                 .Paginate(request.PageNumber, request.PageSize)
                 .ToListAsync();
         }

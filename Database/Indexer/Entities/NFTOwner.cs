@@ -9,5 +9,7 @@ namespace Tokengram.Database.Indexer.Entities
         public string NFTId { get; set; } = null!;
 
         public long Amount { get; set; }
+
+        public DateTime AcquiredAt { get; set; }
     }
 }

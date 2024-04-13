@@ -93,31 +93,37 @@ namespace Tokengram.Services
         public async Task<IEnumerable<PostWithUserContext>> GetUserPosts(
             PaginationRequestDTO request,
             string userAddress,
-            bool isVisible = true
+            bool? isVisible
         )
         {
             User user = await _tokengramDbContext.Users.FirstAsync(x => x.Address == userAddress);
             IEnumerable<string> ownedNFTs = await _nftService.GetOwnedNFTs(request, userAddress);
+            List<PostWithUserContext> posts = new();
 
-            IEnumerable<PostWithUserContext> posts = await _tokengramDbContext.Posts
-                .Include(x => x.PostUserSettings)
-                .Where(x => ownedNFTs.Contains(x.NFTAddress) && x.PostUserSettings.IsVisible == isVisible)
-                .Select(
-                    x =>
-                        new PostWithUserContext
-                        {
-                            Post = x,
-                            CommentCount = x.Comments.Count,
-                            LikeCount = x.Likes.Count,
-                            IsLiked = x.Likes.Any(x => x.LikerAddress == userAddress),
-                            OwnerAddress = userAddress
-                        }
-                )
-                .ToListAsync();
-
-            if (!isVisible)
+            if (isVisible == null || isVisible.Value)
             {
-                IEnumerable<PostWithUserContext> dummyPosts = ownedNFTs
+                posts = await _tokengramDbContext.Posts
+                    .Include(x => x.PostUserSettings)
+                    .Where(x => ownedNFTs.Contains(x.NFTAddress))
+                    .WhereIf(isVisible != null, x => x.PostUserSettings.IsVisible == isVisible)
+                    .OrderByDescending(x => x.PostUserSettings.CreatedAt)
+                    .Select(
+                        x =>
+                            new PostWithUserContext
+                            {
+                                Post = x,
+                                CommentCount = x.Comments.Count,
+                                LikeCount = x.Likes.Count,
+                                IsLiked = x.Likes.Any(x => x.LikerAddress == userAddress),
+                                OwnerAddress = userAddress
+                            }
+                    )
+                    .ToListAsync();
+            }
+
+            if (isVisible == null || !isVisible.Value)
+            {
+                List<PostWithUserContext> dummyPosts = ownedNFTs
                     .Except(posts.Select(x => x.Post.NFTAddress))
                     .Select(
                         nftAddress =>
@@ -126,13 +132,24 @@ namespace Tokengram.Services
                                 Post = new Post { NFTAddress = nftAddress },
                                 OwnerAddress = userAddress
                             }
-                    );
-                posts = posts.Concat(dummyPosts);
+                    )
+                    .ToList();
+                posts.AddRange(dummyPosts);
             }
 
-            posts = await FillPostsWithNFTs(posts);
+            posts = (await FillPostsWithNFTs(posts)).ToList();
 
-            return posts;
+            // if only visible posts are returned, they will be ordered by the time of visibility setting
+            if (isVisible != null && isVisible.Value)
+                return posts;
+
+            Dictionary<string, PostWithUserContext> postDictionary = posts.ToDictionary(
+                post => post.Post.NFTAddress,
+                post => post
+            );
+
+            // if all posts are returned, they will be ordered by the time of acquisition
+            return ownedNFTs.Where(postDictionary.ContainsKey).Select(nftAddress => postDictionary[nftAddress]);
         }
 
         private async Task<PostWithUserContext> FillPostWithNFT(PostWithUserContext post)

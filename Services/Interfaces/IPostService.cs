@@ -15,7 +15,7 @@ namespace Tokengram.Services.Interfaces
         Task<IEnumerable<PostWithUserContext>> GetUserPosts(
             PaginationRequestDTO request,
             string userAddress,
-            bool isVisible = true
+            bool? isVisible
         );
 
         Task<PostLike> LikePost(Post post, string userAddress);

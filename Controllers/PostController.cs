@@ -54,7 +54,7 @@ namespace Tokengram.Controllers
         )
         {
             User user = (HttpContext.Items["user"] as User)!;
-            var result = await _postService.GetUserPosts(request, user.Address);
+            var result = await _postService.GetUserPosts(request, user.Address, true);
 
             return Ok(_mapper.Map<IEnumerable<PostResponseDTO>>(result));
         }
