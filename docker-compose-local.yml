@@ -2,7 +2,7 @@ services:
   backend-db:
     image: postgres:alpine
     ports:
-      - 5432:5432
+      - ${TOKENGRAM_DB_HOST_PORT:-5010}:5432
     networks:
       - tokengram
     environment:
@@ -13,7 +13,7 @@ services:
     container_name: tokengram-backend
     image: tokengram-backend
     ports:
-      - 5000:5000
+      - ${TOKENGRAM_BACKEND_HOST_PORT:-5000}:5000
     environment:
       ASPNETCORE_ENVIRONMENT: Development
     volumes:
