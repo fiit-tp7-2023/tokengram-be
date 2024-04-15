@@ -1,6 +1,6 @@
 .*
 *.yml
-appsettings.*.json
+appsettings*.json
 
 bin
 obj
