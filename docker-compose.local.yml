@@ -7,9 +7,18 @@ services:
       - tokengram
     environment:
       POSTGRES_PASSWORD: tokengram
+    volumes:
+      - tokengram-backend_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 1s
+      retries: 5
 
   backend:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.local
     container_name: tokengram-backend
     image: tokengram-backend
     ports:
@@ -19,12 +28,17 @@ services:
     volumes:
       - tokengram-backend_keys:/etc/team07/tokengram/backend/data-protection-keys
       - tokengram-backend_uploads:/var/tokengram/uploads/public
+      - ./appsettings.json:/app/appsettings.json:ro
+      - ./appsettings.Development.json:/app/appsettings.Development.json:ro
     networks:
       - tokengram
     depends_on:
-      - backend-db
+      backend-db:
+        condition: service_healthy
 
 volumes:
+  tokengram-backend_db:
+    name: tokengram-backend_db
   tokengram-backend_keys:
     name: tokengram-backend_keys
   tokengram-backend_uploads:

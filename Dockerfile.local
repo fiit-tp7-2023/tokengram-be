@@ -1,0 +1,20 @@
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build-env
+
+WORKDIR /app
+
+COPY --link . ./
+
+ENV HUSKY=0
+ENV ASPNETCORE_ENVIRONMENT=Development
+
+RUN dotnet tool install -g dotnet-ef --version 7.0.18
+RUN dotnet dev-certs https
+
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
+RUN dotnet restore
+
+ENV ASPNETCORE_URLS=http://+:5000
+EXPOSE 5000
+
+ENTRYPOINT ["dotnet", "run", "--urls=http://+:5000"]
