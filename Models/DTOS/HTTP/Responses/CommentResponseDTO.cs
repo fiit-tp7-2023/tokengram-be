@@ -2,13 +2,13 @@ using Tokengram.Models.DTOS.Shared.Responses;
 
 namespace Tokengram.Models.DTOS.HTTP.Responses
 {
-    public class CommentWithUserContextResponseDTO
+    public class CommentResponseDTO
     {
         public long Id { get; set; }
 
         public string Content { get; set; } = null!;
 
-        public UserResponseDTO Commenter { get; set; } = null!;
+        public BasicUserResponseDTO Commenter { get; set; } = null!;
 
         public string PostNFTAddress { get; set; } = null!;
 

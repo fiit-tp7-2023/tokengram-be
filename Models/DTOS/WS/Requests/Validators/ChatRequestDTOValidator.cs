@@ -12,6 +12,8 @@ namespace Tokengram.Models.DTOS.WS.Requests.Validators
         {
             _dbContext = dbContext;
 
+            RuleFor(x => x.Name).NotEmpty().MaximumLength(30);
+
             RuleFor(x => x.UserAddresses)
                 .Must(userAddresses => userAddresses.Distinct().Count() == userAddresses.Count)
                 .Must(userAddresses => userAddresses.All(address => _dbContext.Users.Any(u => u.Address == address)));

@@ -8,6 +8,8 @@ namespace Tokengram.Services.Interfaces
     {
         Task<NFTOwner?> GetNFTOwner(string nftAddress);
 
+        Task<IEnumerable<NFTOwner>> GetNFTOwners(IEnumerable<string> nftAddresses);
+
         Task<bool> IsNFTOwner(string nftAddress, string userAddress);
 
         Task<IEnumerable<string>> GetOwnedNFTs(PaginationRequestDTO request, string userAddress);
@@ -15,5 +17,9 @@ namespace Tokengram.Services.Interfaces
         Task<NFTQueryResult> GetNFT(string nftAddress);
 
         Task<IEnumerable<NFTQueryResult>> GetNFTs(IEnumerable<string> nftAddresses);
+
+        Task<IEnumerable<string>> FilterOwnedNFTs(IEnumerable<string> nftAddresses, string userAddress);
+
+        Task<IEnumerable<NFTWithVectorQueryResult>> FillNFTsWithVector(IEnumerable<string> nftAddresses);
     }
 }

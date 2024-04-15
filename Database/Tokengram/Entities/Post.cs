@@ -7,15 +7,11 @@ namespace Tokengram.Database.Tokengram.Entities
     {
         public string NFTAddress { get; set; } = null!;
 
-        public int CommentCount { get; set; } = 0;
-
-        public int LikeCount { get; set; } = 0;
-
         public ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
         public ICollection<PostLike> Likes { get; set; } = new List<PostLike>();
 
-        public ICollection<PostUserSettings> PostUserSettings = new List<PostUserSettings>();
+        public PostUserSettings PostUserSettings { get; set; } = null!;
 
         [NotMapped]
         public NFTQueryResult? NFTQueryResult { get; set; }

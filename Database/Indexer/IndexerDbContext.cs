@@ -16,8 +16,9 @@ namespace Tokengram.Database.Indexer
 
                 e.Property(x => x.Id).HasColumnName("id");
                 e.Property(x => x.Amount).HasColumnName("amount");
-                e.Property(x => x.NFTId).HasColumnName("nft_id").IsRequired(false);
-                e.Property(x => x.OwnerId).HasColumnName("owner_id").IsRequired(false);
+                e.Property(x => x.NFTId).HasColumnName("nft_id");
+                e.Property(x => x.OwnerId).HasColumnName("owner_id");
+                e.Property(x => x.AcquiredAt).HasColumnName("acquired_at");
 
                 e.HasKey(x => x.Id);
             });

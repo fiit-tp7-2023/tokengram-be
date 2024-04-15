@@ -14,7 +14,6 @@ using Tokengram.Database.Tokengram;
 using Microsoft.EntityFrameworkCore;
 using Tokengram.Models.Config;
 using System.Text;
-using Tokengram.Infrastructure;
 using Tokengram.Hubs;
 using Tokengram.Models.Hubs;
 using Tokengram.Models.Mappings;
@@ -80,8 +79,7 @@ namespace Tokengram
                         cfg.AddProfile(new CommentProfile());
                         cfg.AddProfile(new CommentLikeProfile());
                         cfg.AddProfile(new PostLikeProfile());
-                        cfg.AddProfile(new PostUserSettingsProfile());
-                        cfg.AddProfile(new FollowerProfile());
+                        cfg.AddProfile(new UserFollowProfile());
                     }).CreateMapper()
             );
 
@@ -91,7 +89,6 @@ namespace Tokengram
             builder.Services.AddScoped<IPostService, PostService>();
             builder.Services.AddScoped<ICommentService, CommentService>();
             builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddScoped<IFollowerService, FollowerService>();
             builder.Services.AddSingleton<List<ConnectedUser>>();
             builder.Services.AddSingleton<List<ChatGroup>>();
 

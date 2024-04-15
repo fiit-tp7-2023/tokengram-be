@@ -4,10 +4,12 @@ namespace Tokengram.Database.Indexer.Entities
     {
         public string Id { get; set; } = null!;
 
-        public string? OwnerId { get; set; }
+        public string OwnerId { get; set; } = null!;
 
-        public string? NFTId { get; set; }
+        public string NFTId { get; set; } = null!;
 
         public long Amount { get; set; }
+
+        public DateTime AcquiredAt { get; set; }
     }
 }

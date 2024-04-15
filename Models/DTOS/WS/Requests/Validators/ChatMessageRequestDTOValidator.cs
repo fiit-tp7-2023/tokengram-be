@@ -12,7 +12,7 @@ namespace Tokengram.Models.DTOS.WS.Requests.Validators
         {
             _dbContext = dbContext;
 
-            RuleFor(x => x.Content).NotEmpty();
+            RuleFor(x => x.Content).NotEmpty().MaximumLength(1000);
             When(
                 x => x.ParentMessageId != null,
                 () =>

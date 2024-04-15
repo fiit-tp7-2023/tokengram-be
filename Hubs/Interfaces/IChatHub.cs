@@ -6,11 +6,11 @@ namespace Tokengram.Hubs.Interfaces
     {
         Task ReceivedChatInvitation(ReceivedChatInvitationResponseDTO chat);
 
-        Task UserJoinedChat(long chatId, UserResponseDTO joiningUser);
+        Task UserJoinedChat(long chatId, BasicUserResponseDTO joiningUser);
 
-        Task UserLeftChat(long chatId, UserResponseDTO leavingUser);
+        Task UserLeftChat(long chatId, BasicUserResponseDTO leavingUser);
 
-        Task UserDeclinedChatInvitation(long chatId, UserResponseDTO decliningUser);
+        Task UserDeclinedChatInvitation(long chatId, BasicUserResponseDTO decliningUser);
 
         Task ReceivedMessage(long chatId, ChatMessageResponseDTO message);
 
@@ -18,9 +18,9 @@ namespace Tokengram.Hubs.Interfaces
 
         Task AdminDeletedChat(long chatId);
 
-        Task AdminInvitedUser(long chatId, UserResponseDTO invitedUser);
+        Task AdminInvitedUser(long chatId, BasicUserResponseDTO invitedUser);
 
-        Task NewAdmin(long chatId, UserResponseDTO newAdmin);
+        Task NewAdmin(long chatId, BasicUserResponseDTO newAdmin);
 
         Task ChatProfileDeviceSync(UserChatProfileResponseDTO chatProfile);
     }

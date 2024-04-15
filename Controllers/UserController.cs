@@ -17,23 +17,27 @@ namespace Tokengram.Controllers
     {
         private readonly IMapper _mapper;
         private readonly IUserService _userService;
-        private readonly IFollowerService _followerService;
 
-        public UserController(
-            IMapper mapper,
-            IUserService userService,
-            IFollowerService followerService
-        )
+        public UserController(IMapper mapper, IUserService userService)
         {
             _mapper = mapper;
             _userService = userService;
-            _followerService = followerService;
         }
 
         [HttpPut]
-        public async Task<ActionResult<UserResponseDTO>> UpdateUser([FromForm] UserUpdateRequest request)
+        public async Task<ActionResult<BasicUserResponseDTO>> UpdateUser([FromForm] UserUpdateRequest request)
         {
             var result = await _userService.UpdateUser(GetUserAddress(), request);
+
+            return Ok(_mapper.Map<BasicUserResponseDTO>(result));
+        }
+
+        [HttpGet("{userAddress}")]
+        [BindUser]
+        public async Task<ActionResult<UserResponseDTO>> GetUserProfile(string userAddress)
+        {
+            User user = (HttpContext.Items["user"] as User)!;
+            var result = await _userService.GetUserProfile(user, GetUserAddress());
 
             return Ok(_mapper.Map<UserResponseDTO>(result));
         }
@@ -42,16 +46,13 @@ namespace Tokengram.Controllers
         [BindUser]
         public async Task<ActionResult<IEnumerable<FollowerResponseDTO>>> GetUserFollowers(
             string userAddress,
-            [FromQuery] PaginationRequestDTO request)
+            [FromQuery] PaginationRequestDTO request
+        )
         {
             User user = (HttpContext.Items["user"] as User)!;
-            var result = await _followerService.GetUserFollowers(user, request);
-            var dto = result.Select(x => new FollowerResponseDTO {
-                User = _mapper.Map<UserResponseDTO>(x.User),
-                FollowingSince = x.CreatedAt
-            });
+            var result = await _userService.GetUserFollowers(user, request);
 
-            return Ok(dto);
+            return Ok(_mapper.Map<IEnumerable<FollowerResponseDTO>>(result));
         }
 
         [HttpDelete("followers/{userAddress}")]
@@ -59,31 +60,32 @@ namespace Tokengram.Controllers
         public async Task<ActionResult> RemoveFollower(string userAddress)
         {
             User deletedFollower = (HttpContext.Items["user"] as User)!;
-            await _followerService.UnfollowUser(deletedFollower.Address, GetUserAddress());
+            await _userService.UnfollowUser(deletedFollower.Address, GetUserAddress());
 
             return NoContent();
         }
 
         [HttpGet("{userAddress}/followings")]
         [BindUser]
-        public async Task<ActionResult<IEnumerable<FollowerResponseDTO>>> GetUserFollowings(
+        public async Task<ActionResult<IEnumerable<FollowingResponseDTO>>> GetUserFollowings(
             string userAddress,
-            [FromQuery] PaginationRequestDTO request)
+            [FromQuery] PaginationRequestDTO request
+        )
         {
             User user = (HttpContext.Items["user"] as User)!;
-            var result = await _followerService.GetUserFollowings(user, request);
+            var result = await _userService.GetUserFollowings(user, request);
 
-            return Ok(_mapper.Map<IEnumerable<FollowerResponseDTO>>(result));
+            return Ok(_mapper.Map<IEnumerable<FollowingResponseDTO>>(result));
         }
 
         [HttpPost("followings/{userAddress}")]
         [BindUser]
-        public async Task<ActionResult<IEnumerable<FollowerResponseDTO>>> FollowUser(string userAddress)
+        public async Task<ActionResult<FollowingResponseDTO>> FollowUser(string userAddress)
         {
             User targetUser = (HttpContext.Items["user"] as User)!;
-            var result = await _followerService.FollowUser(GetUserAddress(), targetUser);
+            var result = await _userService.FollowUser(GetUserAddress(), targetUser);
 
-            return Ok(_mapper.Map<FollowerResponseDTO>(result));
+            return Created(nameof(FollowUser), _mapper.Map<FollowingResponseDTO>(result));
         }
 
         [HttpDelete("followings/{userAddress}")]
@@ -91,7 +93,7 @@ namespace Tokengram.Controllers
         public async Task<ActionResult> UnfollowUser(string userAddress)
         {
             User targetUser = (HttpContext.Items["user"] as User)!;
-            await _followerService.UnfollowUser(GetUserAddress(), targetUser);
+            await _userService.UnfollowUser(GetUserAddress(), targetUser);
 
             return NoContent();
         }

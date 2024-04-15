@@ -41,7 +41,9 @@ namespace Tokengram.Hubs
 
             if (joinedNow)
             {
-                await Clients.Group(chat.Id.ToString()).UserJoinedChat(chat.Id, _mapper.Map<UserResponseDTO>(sender));
+                await Clients
+                    .Group(chat.Id.ToString())
+                    .UserJoinedChat(chat.Id, _mapper.Map<BasicUserResponseDTO>(sender));
                 await SendChatProfileDeviceSync();
                 await AddUserConnectionsToChatGroup(chat);
             }

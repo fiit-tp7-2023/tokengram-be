@@ -17,58 +17,68 @@ namespace Tokengram.Controllers
         private readonly IMapper _mapper;
         private readonly IPostService _postService;
         private readonly ICommentService _commentService;
-
-        private readonly IRecommendationService _recommendationService;
-
         private readonly IUserService _userService;
 
         public PostController(
             IMapper mapper,
             IPostService postService,
             ICommentService commentService,
-            IUserService userService,
-            IRecommendationService recommendationService
+            IUserService userService
         )
         {
             _mapper = mapper;
             _postService = postService;
             _userService = userService;
-            _recommendationService = recommendationService;
             _commentService = commentService;
         }
-        
-        [HttpGet("")]
-        public async Task<ActionResult<IEnumerable<UserPostResponseDTO>>> GetUserPosts(
-            [FromQuery] PaginationRequestDTO request
+
+        [HttpGet("user")]
+        public async Task<ActionResult<IEnumerable<PostResponseDTO>>> GetCurrentUserPosts(
+            [FromQuery] GetUserPostsRequestDTO request
         )
         {
-            var result = await _postService.GetUserPosts(request, GetUserAddress());
+            var result = await _postService.GetUserPosts(
+                new PaginationRequestDTO { PageNumber = request.PageNumber, PageSize = request.PageSize },
+                GetUserAddress(),
+                request.IsVisible
+            );
 
-            return Ok(_mapper.Map<IEnumerable<UserPostResponseDTO>>(result));
+            return Ok(_mapper.Map<IEnumerable<PostResponseDTO>>(result));
         }
-        
-        [HttpGet("hot-posts")]
-        public async Task<ActionResult<IEnumerable<UserPostResponseDTO>>> GetHotPosts(
+
+        [HttpGet("user/{userAddress}")]
+        [BindUser]
+        public async Task<ActionResult<IEnumerable<PostResponseDTO>>> GetUserPosts(
+            string userAddress,
             [FromQuery] PaginationRequestDTO request
         )
         {
-            var userAddress = GetUserAddress();
-            var user = await _userService.GetUser(userAddress);
-            var result = await _recommendationService.GetHotPosts(user, request);
+            User user = (HttpContext.Items["user"] as User)!;
+            var result = await _postService.GetUserPosts(request, user.Address, true);
 
-            // return list of all posts
-            return Ok(_mapper.Map<IEnumerable<UserPostResponseDTO>>(result));
+            return Ok(_mapper.Map<IEnumerable<PostResponseDTO>>(result));
+        }
+
+        [HttpGet("hot")]
+        public async Task<ActionResult<IEnumerable<PostResponseDTO>>> GetHotPosts(
+            [FromQuery] PaginationRequestDTO request
+        )
+        {
+            var user = await _userService.GetUser(GetUserAddress());
+            var result = await _postService.GetHotPosts(user, request);
+
+            return Ok(_mapper.Map<IEnumerable<PostResponseDTO>>(result));
         }
 
         [HttpPut("{postNFTAddress}/settings")]
-        public async Task<ActionResult<BasicPostUserSettingsResponseDTO>> UpdatePostUserSettings(
+        public async Task<ActionResult<PostResponseDTO>> UpdatePostUserSettings(
             string postNFTAddress,
             PostUserSettingsRequestDTO request
         )
         {
             var result = await _postService.UpdatePostUserSettings(request, postNFTAddress, GetUserAddress());
 
-            return Ok(_mapper.Map<BasicPostUserSettingsResponseDTO>(result));
+            return Ok(_mapper.Map<PostResponseDTO>(result));
         }
 
         [HttpGet("{postNFTAddress}/likes")]
@@ -87,22 +97,18 @@ namespace Tokengram.Controllers
 
         [HttpPost("{postNFTAddress}/likes")]
         [BindPost]
-        public async Task<ActionResult<BasicPostLikeResponseDTO>> LikePost(string postNFTAddress)
+        public async Task<ActionResult<PostLikeResponseDTO>> LikePost(string postNFTAddress)
         {
             Post post = (HttpContext.Items["post"] as Post)!;
 
             var result = await _postService.LikePost(post, GetUserAddress());
 
-            return CreatedAtAction(
-                nameof(LikePost),
-                new { id = result.Id },
-                _mapper.Map<BasicPostLikeResponseDTO>(result)
-            );
+            return Created(nameof(LikePost), _mapper.Map<PostLikeResponseDTO>(result));
         }
 
         [HttpDelete("{postNFTAddress}/likes")]
         [BindPost]
-        public async Task<ActionResult<BasicPostLikeResponseDTO>> UnlikePost(string postNFTAddress)
+        public async Task<ActionResult> UnlikePost(string postNFTAddress)
         {
             Post post = (HttpContext.Items["post"] as Post)!;
 

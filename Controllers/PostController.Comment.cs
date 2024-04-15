@@ -10,21 +10,21 @@ namespace Tokengram.Controllers
     {
         [HttpGet("{postNFTAddress}/comments")]
         [BindPost]
-        public async Task<ActionResult<IEnumerable<CommentWithUserContextResponseDTO>>> GetComments(
+        public async Task<ActionResult<IEnumerable<CommentResponseDTO>>> GetComments(
             string postNFTAddress,
             [FromQuery] PaginationRequestDTO request
         )
         {
             Post post = (HttpContext.Items["post"] as Post)!;
 
-            var result = await _commentService.GetCommentsWithUserContext(request, post, GetUserAddress());
+            var result = await _commentService.GetComments(request, post, GetUserAddress());
 
-            return Ok(_mapper.Map<IEnumerable<CommentWithUserContextResponseDTO>>(result));
+            return Ok(_mapper.Map<IEnumerable<CommentResponseDTO>>(result));
         }
 
         [HttpPost("{postNFTAddress}/comments")]
         [BindPost]
-        public async Task<ActionResult<BasicCommentResponseDTO>> CreateComment(
+        public async Task<ActionResult<CommentResponseDTO>> CreateComment(
             string postNFTAddress,
             CommentRequestDTO request
         )
@@ -33,16 +33,12 @@ namespace Tokengram.Controllers
 
             var result = await _commentService.CreateComment(request, post, GetUserAddress());
 
-            return CreatedAtAction(
-                nameof(CreateComment),
-                new { id = result.Id },
-                _mapper.Map<BasicCommentResponseDTO>(result)
-            );
+            return Created(nameof(CreateComment), _mapper.Map<CommentResponseDTO>(result));
         }
 
         [HttpGet("{postNFTAddress}/comments/{commentId}/replies")]
         [BindComment]
-        public async Task<ActionResult<IEnumerable<CommentWithUserContextResponseDTO>>> GetCommentReplies(
+        public async Task<ActionResult<IEnumerable<CommentResponseDTO>>> GetCommentReplies(
             string postNFTAddress,
             long commentId,
             [FromQuery] PaginationRequestDTO request
@@ -50,14 +46,14 @@ namespace Tokengram.Controllers
         {
             Comment comment = (HttpContext.Items["ValidatedComment"] as Comment)!;
 
-            var result = await _commentService.GetCommentRepliesWithUserContext(request, comment, GetUserAddress());
+            var result = await _commentService.GetCommentReplies(request, comment, GetUserAddress());
 
-            return Ok(_mapper.Map<IEnumerable<CommentWithUserContextResponseDTO>>(result));
+            return Ok(_mapper.Map<IEnumerable<CommentResponseDTO>>(result));
         }
 
         [HttpPut("{postNFTAddress}/comments/{commentId}")]
         [BindComment]
-        public async Task<ActionResult<BasicCommentResponseDTO>> UpdateComment(
+        public async Task<ActionResult<CommentResponseDTO>> UpdateComment(
             string postNFTAddress,
             long commentId,
             CommentUpdateRequestDTO request
@@ -67,7 +63,7 @@ namespace Tokengram.Controllers
 
             var result = await _commentService.UpdateComment(request, comment, GetUserAddress());
 
-            return Ok(_mapper.Map<BasicCommentResponseDTO>(result));
+            return Ok(_mapper.Map<CommentResponseDTO>(result));
         }
 
         [HttpDelete("{postNFTAddress}/comments/{commentId}")]
@@ -98,25 +94,18 @@ namespace Tokengram.Controllers
 
         [HttpPost("{postNFTAddress}/comments/{commentId}/likes")]
         [BindComment]
-        public async Task<ActionResult<BasicCommentLikeResponseDTO>> LikeComment(string postNFTAddress, long commentId)
+        public async Task<ActionResult<CommentLikeResponseDTO>> LikeComment(string postNFTAddress, long commentId)
         {
             Comment comment = (HttpContext.Items["ValidatedComment"] as Comment)!;
 
             var result = await _commentService.LikeComment(comment, GetUserAddress());
 
-            return CreatedAtAction(
-                nameof(LikeComment),
-                new { id = result.Id },
-                _mapper.Map<BasicCommentLikeResponseDTO>(result)
-            );
+            return Created(nameof(LikeComment), _mapper.Map<CommentLikeResponseDTO>(result));
         }
 
         [HttpDelete("{postNFTAddress}/comments/{commentId}/likes")]
         [BindComment]
-        public async Task<ActionResult<BasicCommentLikeResponseDTO>> UnlikeComment(
-            string postNFTAddress,
-            long commentId
-        )
+        public async Task<ActionResult> UnlikeComment(string postNFTAddress, long commentId)
         {
             Comment comment = (HttpContext.Items["ValidatedComment"] as Comment)!;
 

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Tokengram.Constants;
 using Tokengram.Database.Tokengram;
 using Tokengram.Database.Tokengram.Entities;
+using Tokengram.Models.CustomEntities;
 using Tokengram.Models.DTOS.HTTP.Requests;
 using Tokengram.Models.Exceptions;
 using Tokengram.Services.Interfaces;
@@ -10,34 +11,60 @@ namespace Tokengram.Services
 {
     public partial class UserService : IUserService
     {
-        private static readonly Random random = new();
-        private readonly TokengramDbContext _dbContext;
+        private static readonly Random _random = new();
+        private readonly TokengramDbContext _tokengramDbContext;
         private readonly IConfiguration _configuration;
-
         private readonly INFTService _nftService;
 
-        public UserService(TokengramDbContext dbContext, IConfiguration configuration, INFTService nftService)
+        public UserService(TokengramDbContext tokengramDbContext, IConfiguration configuration, INFTService nftService)
         {
-            _dbContext = dbContext;
+            _tokengramDbContext = tokengramDbContext;
             _configuration = configuration;
             _nftService = nftService;
         }
 
+        public async Task<UserWithUserContext> GetUserProfile(User user, string requestingUserAddress)
+        {
+            IEnumerable<string> visiblePosts = await _tokengramDbContext.PostUserSettings
+                .Where(x => x.UserAddress == user.Address && x.IsVisible == true)
+                .Select(x => x.PostNFTAddress)
+                .ToListAsync();
+            visiblePosts = await _nftService.FilterOwnedNFTs(visiblePosts, user.Address);
+            long visiblePostsCount = visiblePosts.Count();
+
+            UserWithUserContext userWithUserContext = await _tokengramDbContext.Users
+                .Select(
+                    x =>
+                        new UserWithUserContext
+                        {
+                            User = x,
+                            PostCount = visiblePostsCount,
+                            FollowerCount = x.Followers.Count,
+                            FollowingCount = x.Followings.Count,
+                            IsFollower = x.Followings.Any(x => x.FollowedUserAddress == requestingUserAddress),
+                            IsFollowed = x.Followers.Any(x => x.FollowerAddress == requestingUserAddress)
+                        }
+                )
+                .FirstAsync(x => x.User.Address == user.Address);
+
+            return userWithUserContext;
+        }
+
         public async Task<User> GetUser(string userAddress)
         {
-            return await _dbContext.Users.FirstOrDefaultAsync(x => x.Address == userAddress)
+            return await _tokengramDbContext.Users.FirstOrDefaultAsync(x => x.Address == userAddress)
                 ?? throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
         }
 
         public async Task<User> UpdateUser(string userAddress, UserUpdateRequest request)
         {
             var user =
-                await _dbContext.Users.FirstOrDefaultAsync(x => x.Address == userAddress)
+                await _tokengramDbContext.Users.FirstOrDefaultAsync(x => x.Address == userAddress)
                 ?? throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
 
             if (request.Username != null)
             {
-                bool alreadyUsed = await _dbContext.Users.AnyAsync(x => x.Username == request.Username);
+                bool alreadyUsed = await _tokengramDbContext.Users.AnyAsync(x => x.Username == request.Username);
                 if (alreadyUsed)
                 {
                     throw new ForbiddenException(ErrorMessages.USERNAME_ALREADY_TAKEN);
@@ -74,7 +101,7 @@ namespace Tokengram.Services
                 user.ProfilePicturePath = fileRelativePath;
             }
 
-            await _dbContext.SaveChangesAsync();
+            await _tokengramDbContext.SaveChangesAsync();
 
             if (oldProfilePicture != null)
             {
@@ -105,7 +132,7 @@ namespace Tokengram.Services
 
             for (int i = 0; i < length; i++)
             {
-                fileName[i] = chars[random.Next(chars.Length)];
+                fileName[i] = chars[_random.Next(chars.Length)];
             }
 
             return new string(fileName);

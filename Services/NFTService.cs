@@ -26,9 +26,22 @@ namespace Tokengram.Services
 
         public async Task<NFTOwner?> GetNFTOwner(string nftAddress)
         {
-            return await _indexerDbContext.NFTOwners.FirstOrDefaultAsync(
-                x => x.NFTId == nftAddress && x.OwnerId != null
-            );
+            return await _indexerDbContext.NFTOwners.FirstOrDefaultAsync(x => x.NFTId == nftAddress);
+        }
+
+        public async Task<IEnumerable<NFTOwner>> GetNFTOwners(IEnumerable<string> nftAddresses)
+        {
+            return await _indexerDbContext.NFTOwners
+                .Where(x => x.NFTId.In(nftAddresses) && x.OwnerId != null)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<string>> FilterOwnedNFTs(IEnumerable<string> nftAddresses, string userAddress)
+        {
+            return await _indexerDbContext.NFTOwners
+                .Where(x => x.NFTId.In(nftAddresses) && x.OwnerId == userAddress)
+                .Select(x => x.NFTId)
+                .ToListAsync();
         }
 
         public async Task<bool> IsNFTOwner(string nftAddress, string userAddress)
@@ -39,9 +52,9 @@ namespace Tokengram.Services
         public async Task<IEnumerable<string>> GetOwnedNFTs(PaginationRequestDTO request, string userAddress)
         {
             return await _indexerDbContext.NFTOwners
-                .Where(x => x.OwnerId == userAddress && x.NFTId != null)
+                .Where(x => x.OwnerId == userAddress)
+                .OrderByDescending(x => x.AcquiredAt)
                 .Select(x => x.NFTId!)
-                .OrderBy(x => x)
                 .Paginate(request.PageNumber, request.PageSize)
                 .ToListAsync();
         }
@@ -84,6 +97,22 @@ namespace Tokengram.Services
                 .ResultsAsync;
 
             return queryResult;
+        }
+
+        public async Task<IEnumerable<NFTWithVectorQueryResult>> FillNFTsWithVector(IEnumerable<string> nftAddresses)
+        {
+            return await _graphClient.Cypher
+                .Match($"(nft:{NodeNames.NFT})")
+                .Where<NFTNode>((nft) => nft.Address.In(nftAddresses) && nft.NFTVector != null)
+                .Return(
+                    (nft) =>
+                        new NFTWithVectorQueryResult
+                        {
+                            Address = nft.As<NFTNode>().Address,
+                            Vector = nft.As<NFTNode>().NFTVector!
+                        }
+                )
+                .ResultsAsync;
         }
     }
 }
