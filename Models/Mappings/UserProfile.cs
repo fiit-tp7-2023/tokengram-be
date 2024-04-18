@@ -49,7 +49,8 @@ namespace Tokengram.Models.Mappings
                                 src.Chats.Where(
                                     chat =>
                                         src.ReceivedChatInvitations.Any(
-                                            chatInvitation => chatInvitation.JoinedAt != null
+                                            chatInvitation =>
+                                                chatInvitation.ChatId == chat.Id && chatInvitation.JoinedAt != null
                                         )
                                 )
                         )

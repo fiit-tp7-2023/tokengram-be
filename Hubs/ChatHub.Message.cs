@@ -23,10 +23,8 @@ namespace Tokengram.Hubs
 
             if (chatInvitation == null)
                 throw new HubException(Constants.ErrorMessages.CHAT_INVITATION_RESPONSE_NOT_INVITED);
-
-            bool joinedNow = chatInvitation.JoinedAt == null;
-            if (joinedNow)
-                chatInvitation.JoinedAt = DateTime.UtcNow;
+            if (chatInvitation.JoinedAt == null)
+                throw new HubException(Constants.ErrorMessages.CHAT_NOT_MEMBER);
 
             ChatMessage chatMessage =
                 new()
@@ -38,15 +36,6 @@ namespace Tokengram.Hubs
                 };
             await _dbContext.ChatMessages.AddAsync(chatMessage);
             await _dbContext.SaveChangesAsync();
-
-            if (joinedNow)
-            {
-                await Clients
-                    .Group(chat.Id.ToString())
-                    .UserJoinedChat(chat.Id, _mapper.Map<BasicUserResponseDTO>(sender));
-                await SendChatProfileDeviceSync();
-                await AddUserConnectionsToChatGroup(chat);
-            }
 
             ChatMessageResponseDTO chatMessageResponse = _mapper.Map<ChatMessageResponseDTO>(chatMessage);
 

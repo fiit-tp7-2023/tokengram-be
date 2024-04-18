@@ -30,14 +30,18 @@ namespace Tokengram.Hubs
                 };
             chat.Users.Add(sender);
 
-            foreach (string userAddress in request.UserAddresses)
+            IEnumerable<User> users = await _dbContext.Users
+                .Where(x => request.UserAddresses.Contains(x.Address))
+                .ToListAsync();
+
+            foreach (User user in users)
             {
                 chat.ChatInvitations.Add(
                     new ChatInvitation
                     {
-                        UserAddress = userAddress,
-                        Sender = userAddress == sender.Address ? null : sender,
-                        JoinedAt = userAddress == sender.Address ? DateTime.UtcNow : null
+                        User = user,
+                        Sender = user.Address == sender.Address ? null : sender,
+                        JoinedAt = user.Address == sender.Address ? DateTime.UtcNow : null
                     }
                 );
             }
@@ -62,7 +66,13 @@ namespace Tokengram.Hubs
                 )
                 .ReceivedChatInvitation(chatInvitationResponse);
 
-            await SendChatProfileDeviceSync();
+            await Clients
+                .AllExcept(
+                    _connectedUsers
+                        .Where(x => x.Address != sender.Address || x.ConnectionId == Context.ConnectionId)
+                        .Select(x => x.ConnectionId)
+                )
+                .CreatedChatFromAnotherDevice(_mapper.Map<ChatResponseDTO>(chat));
             await AddUserConnectionsToChatGroup(chat);
 
             return _mapper.Map<ChatResponseDTO>(chat);
@@ -70,7 +80,7 @@ namespace Tokengram.Hubs
 
         [BindChatHub]
         [BindUserHub(UserMethodKey = "invitedUserAddress", ItemKey = "invitedUser")]
-        public async Task InviteToChat(long chatId, long invitedUserAddress)
+        public async Task<ChatInvitationResponseDTO> InviteToChat(long chatId, long invitedUserAddress)
         {
             Chat chat = (Context.Items["chat"] as Chat)!;
             User invitedUser = (Context.Items["invitedUser"] as User)!;
@@ -104,7 +114,9 @@ namespace Tokengram.Hubs
                 .ReceivedChatInvitation(_mapper.Map<ReceivedChatInvitationResponseDTO>(chatInvitation));
             await Clients
                 .OthersInGroup(chat.Id.ToString())
-                .AdminInvitedUser(chat.Id, _mapper.Map<BasicUserResponseDTO>(invitedUser));
+                .AdminInvitedUser(chat.Id, _mapper.Map<ChatInvitationResponseDTO>(chatInvitation));
+
+            return _mapper.Map<ChatInvitationResponseDTO>(chatInvitation);
         }
 
         [BindChatHub]
@@ -137,7 +149,13 @@ namespace Tokengram.Hubs
                 await Clients
                     .Group(chat.Id.ToString())
                     .UserJoinedChat(chat.Id, _mapper.Map<BasicUserResponseDTO>(respondingUser));
-                await SendChatProfileDeviceSync();
+                await Clients
+                    .AllExcept(
+                        _connectedUsers
+                            .Where(x => x.Address != respondingUser.Address || x.ConnectionId == Context.ConnectionId)
+                            .Select(x => x.ConnectionId)
+                    )
+                    .JoinedChatFromAnotherDevice(_mapper.Map<ChatResponseDTO>(chat));
                 await AddUserConnectionsToChatGroup(chat);
 
                 return _mapper.Map<ChatResponseDTO>(chat);
@@ -146,10 +164,14 @@ namespace Tokengram.Hubs
             {
                 _dbContext.ChatInvitations.Remove(chatInvitation);
                 await _dbContext.SaveChangesAsync();
+                await Clients.Group(chat.Id.ToString()).UserDeclinedChatInvitation(chat.Id, respondingUser.Address);
                 await Clients
-                    .Group(chat.Id.ToString())
-                    .UserDeclinedChatInvitation(chat.Id, _mapper.Map<BasicUserResponseDTO>(respondingUser));
-                await SendChatProfileDeviceSync();
+                    .AllExcept(
+                        _connectedUsers
+                            .Where(x => x.Address != respondingUser.Address || x.ConnectionId == Context.ConnectionId)
+                            .Select(x => x.ConnectionId)
+                    )
+                    .DeclinedChatInvitationFromAnotherDevice(chat.Id);
 
                 return null;
             }
@@ -223,6 +245,14 @@ namespace Tokengram.Hubs
             _dbContext.ChatInvitations.Remove(leavingUserChatInvitation);
             await _dbContext.SaveChangesAsync();
 
+            await Clients
+                .AllExcept(
+                    _connectedUsers
+                        .Where(x => x.Address != leavingUser.Address || x.ConnectionId == Context.ConnectionId)
+                        .Select(x => x.ConnectionId)
+                )
+                .LeftChatFromAnotherDevice(chat.Id);
+
             await RemoveUserConnectionsFromChatGroup(chat);
 
             if (chatDeleted)
@@ -245,12 +275,8 @@ namespace Tokengram.Hubs
                         .Group(chat.Id.ToString())
                         .NewAdmin(chat.Id, _mapper.Map<BasicUserResponseDTO>(chat.Admin));
                 }
-                await Clients
-                    .Group(chat.Id.ToString())
-                    .UserLeftChat(chat.Id, _mapper.Map<BasicUserResponseDTO>(leavingUser));
+                await Clients.Group(chat.Id.ToString()).UserLeftChat(chat.Id, leavingUser.Address);
             }
-
-            await SendChatProfileDeviceSync();
         }
     }
 }

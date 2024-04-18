@@ -105,35 +105,5 @@ namespace Tokengram.Hubs
             foreach (ConnectedUser connection in userConnections)
                 await RemoveUserConnectionFromChatGroup(chat, connection);
         }
-
-        private async Task SendChatProfileDeviceSync()
-        {
-            string userAddress = GetUserAddress();
-            List<ConnectedUser> userConnections = _connectedUsers
-                .Where(x => x.Address == userAddress && x.ConnectionId != Context.ConnectionId)
-                .ToList();
-
-            if (userConnections.Count == 0)
-                return;
-
-            User user = await _dbContext.Users
-                .Include(x => x.Chats)
-                .ThenInclude(x => x.Users)
-                .Include(x => x.Chats)
-                .ThenInclude(x => x.ChatMessages.OrderByDescending(y => y.CreatedAt).Take(1))
-                .ThenInclude(x => x.Sender)
-                .FirstAsync(x => x.Address == userAddress);
-
-            UserChatProfileResponseDTO chatProfile = _mapper.Map<UserChatProfileResponseDTO>(user);
-
-            await Clients
-                .AllExcept(
-                    _connectedUsers
-                        .Where(x => x.Address != userAddress || x.ConnectionId == Context.ConnectionId)
-                        .Select(x => x.ConnectionId)
-                        .ToList()
-                )
-                .ChatProfileDeviceSync(chatProfile);
-        }
     }
 }

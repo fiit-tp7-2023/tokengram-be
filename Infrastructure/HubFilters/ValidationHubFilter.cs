@@ -17,22 +17,24 @@ namespace Tokengram.Infrastructure.HubFilters
             Func<HubInvocationContext, ValueTask<object?>> next
         )
         {
-            var requestType = invocationContext.HubMethodArguments[0]?.GetType();
-
-            if (requestType != null)
+            foreach (object? argument in invocationContext.HubMethodArguments)
             {
-                var validatorType = typeof(IValidator<>).MakeGenericType(requestType);
+                var argumentType = argument?.GetType();
 
-                if (_serviceProvider.GetService(validatorType) is IValidator validator)
+                if (argumentType != null)
                 {
-                    var request = invocationContext.HubMethodArguments[0];
-                    var validationResult = await validator.ValidateAsync(new ValidationContext<object>(request!));
+                    var validatorType = typeof(IValidator<>).MakeGenericType(argumentType);
 
-                    if (!validationResult.IsValid)
-                        throw new ValidationException(
-                            Constants.ErrorMessages.VALIDATION_ERROR,
-                            validationResult.Errors
-                        );
+                    if (_serviceProvider.GetService(validatorType) is IValidator validator)
+                    {
+                        var validationResult = await validator.ValidateAsync(new ValidationContext<object>(argument!));
+
+                        if (!validationResult.IsValid)
+                            throw new ValidationException(
+                                Constants.ErrorMessages.VALIDATION_ERROR,
+                                validationResult.Errors
+                            );
+                    }
                 }
             }
 
