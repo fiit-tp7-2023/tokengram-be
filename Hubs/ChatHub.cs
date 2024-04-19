@@ -38,11 +38,11 @@ namespace Tokengram.Hubs
                 .Include(x => x.Chats.Where(x => x.ChatInvitations.Any(x => x.JoinedAt != null)))
                 .FirstAsync(x => x.Address == GetUserAddress());
             ConnectedUser connection = new() { Address = user.Address, ConnectionId = Context.ConnectionId };
+
             _connectedUsers.Add(connection);
+
             foreach (Chat chat in user.Chats)
-            {
                 await AddUserConnectionToChatGroup(chat, connection);
-            }
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
@@ -50,13 +50,12 @@ namespace Tokengram.Hubs
             User user = await _dbContext.Users
                 .Include(x => x.Chats.Where(x => x.ChatInvitations.Any(x => x.JoinedAt != null)))
                 .FirstAsync(x => x.Address == GetUserAddress());
-            ConnectedUser connection = new() { Address = user.Address, ConnectionId = Context.ConnectionId };
-            _connectedUsers.Add(connection);
+            ConnectedUser connection = _connectedUsers.First(x => x.ConnectionId == Context.ConnectionId);
+
+            _connectedUsers.Remove(connection);
+
             foreach (Chat chat in user.Chats)
-            {
-                await AddUserConnectionToChatGroup(chat, connection);
-            }
-            _connectedUsers.RemoveAll(u => u.ConnectionId == Context.ConnectionId);
+                await RemoveUserConnectionFromChatGroup(chat, connection);
 
             await base.OnDisconnectedAsync(exception);
         }
@@ -68,9 +67,13 @@ namespace Tokengram.Hubs
 
         private async Task AddUserConnectionToChatGroup(Chat chat, ConnectedUser connection)
         {
-            ChatGroup chatGroup =
-                _chatGroups.FirstOrDefault(x => x.ChatId == chat.Id)
-                ?? new ChatGroup { ChatId = chat.Id, ConnectedUsers = new List<ConnectedUser>() };
+            ChatGroup? chatGroup = _chatGroups.FirstOrDefault(x => x.ChatId == chat.Id);
+
+            if (chatGroup == null)
+            {
+                chatGroup = new ChatGroup { ChatId = chat.Id, ConnectedUsers = new List<ConnectedUser>() };
+                _chatGroups.Add(chatGroup);
+            }
 
             if (!chatGroup.ConnectedUsers.Any(x => x.ConnectionId == connection.ConnectionId))
                 chatGroup.ConnectedUsers.Add(connection);

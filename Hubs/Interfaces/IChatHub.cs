@@ -29,5 +29,7 @@ namespace Tokengram.Hubs.Interfaces
         Task DeclinedChatInvitationFromAnotherDevice(long chatId);
 
         Task LeftChatFromAnotherDevice(long chatId);
+
+        Task AdminDeletedChatInvitation(long chatId);
     }
 }

@@ -26,7 +26,7 @@ namespace Tokengram.Hubs
                 {
                     Name = request.Name,
                     AdminAddress = sender.Address,
-                    Type = request.UserAddresses.Count > 2 ? Enums.ChatTypeEnum.GROUP : Enums.ChatTypeEnum.PRIVATE
+                    Type = request.UserAddresses.Count > 2 ? ChatTypeEnum.GROUP : ChatTypeEnum.PRIVATE
                 };
             chat.Users.Add(sender);
 
@@ -90,7 +90,7 @@ namespace Tokengram.Hubs
             bool isChatAdmin = chat.AdminAddress == sender.Address;
             bool invitationExists = chat.ChatInvitations.Any(x => x.UserAddress == invitedUser.Address);
 
-            if (chat.Type == Enums.ChatTypeEnum.PRIVATE)
+            if (chat.Type == ChatTypeEnum.PRIVATE)
                 throw new HubException(Constants.ErrorMessages.CHAT_INVITATION_TO_PRIVATE_CHAT);
             if (sender.Address == invitedUser.Address)
                 throw new HubException(Constants.ErrorMessages.CHAT_INVITATION_TO_SELF);
@@ -195,7 +195,7 @@ namespace Tokengram.Hubs
             );
             bool isPromoterAdmin = chat.AdminAddress == promotingUser.Address;
 
-            if (chat.Type == Enums.ChatTypeEnum.PRIVATE)
+            if (chat.Type == ChatTypeEnum.PRIVATE)
                 throw new HubException(Constants.ErrorMessages.CHAT_PROMOTE_ADMIN_PRIVATE_CHAT);
             if (isAdminMember)
                 throw new HubException(Constants.ErrorMessages.CHAT_PROMOTE_ADMIN_NOT_MEMBER);
@@ -214,10 +214,12 @@ namespace Tokengram.Hubs
             Chat chat = (Context.Items["chat"] as Chat)!;
 
             User leavingUser = await GetUser();
-            List<ChatInvitation> acceptedChatInvitations = await _dbContext.ChatInvitations
+            List<ChatInvitation> chatInvitations = await _dbContext.ChatInvitations
                 .Include(x => x.User)
-                .Where(x => x.ChatId == chat.Id && x.JoinedAt != null)
+                .Where(x => x.ChatId == chat.Id)
                 .ToListAsync();
+            List<ChatInvitation> pendingChatInvitations = chatInvitations.Where(x => x.JoinedAt == null).ToList();
+            List<ChatInvitation> acceptedChatInvitations = chatInvitations.Where(x => x.JoinedAt != null).ToList();
             ChatInvitation? leavingUserChatInvitation = acceptedChatInvitations.FirstOrDefault(
                 x => x.UserAddress == leavingUser.Address
             );
@@ -262,10 +264,15 @@ namespace Tokengram.Hubs
                 if (chatGroup != null)
                 {
                     foreach (ConnectedUser connection in chatGroup.ConnectedUsers)
-                    {
                         await RemoveUserConnectionFromChatGroup(chat, connection);
-                    }
                 }
+                await Clients
+                    .AllExcept(
+                        _connectedUsers
+                            .Where(x => !pendingChatInvitations.Select(x => x.User.Address).Contains(x.Address))
+                            .Select(x => x.ConnectionId)
+                    )
+                    .AdminDeletedChatInvitation(chat.Id);
             }
             else
             {
