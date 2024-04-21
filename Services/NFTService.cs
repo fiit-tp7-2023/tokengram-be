@@ -11,6 +11,7 @@ using Tokengram.Extensions;
 using Tokengram.Models.DTOS.HTTP.Requests;
 using Tokengram.Database.Indexer.Entities;
 
+// Qu
 namespace Tokengram.Services
 {
     public class NFTService : INFTService
