@@ -32,7 +32,7 @@ namespace Tokengram.Services
         public async Task<IEnumerable<NFTOwner>> GetNFTOwners(IEnumerable<string> nftAddresses)
         {
             return await _indexerDbContext.NFTOwners
-                .Where(x => x.NFTId.In(nftAddresses) && x.OwnerId != null)
+                .Where(x => nftAddresses.Contains(x.NFTId) && x.OwnerId != null)
                 .ToListAsync();
         }
 
