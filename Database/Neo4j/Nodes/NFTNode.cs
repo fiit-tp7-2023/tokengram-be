@@ -33,7 +33,7 @@ namespace Tokengram.Database.Neo4j.Nodes
         public string? AnimationUrl { get; set; }
 
         [JsonProperty("nft_vector")]
-        public string? NFTVector { get; set; }
+        public string NFTVector { get; set; }
 
         [JsonProperty("description")]
         public string? Description { get; set; }
