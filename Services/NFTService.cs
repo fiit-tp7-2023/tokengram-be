@@ -103,13 +103,13 @@ namespace Tokengram.Services
         {
             return await _graphClient.Cypher
                 .Match($"(nft:{NodeNames.NFT})")
-                .Where<NFTNode>((nft) => nft.Address.In(nftAddresses) && nft.NFTVector != null)
+                .Where<NFTNode>((nft) => nft.Address.In(nftAddresses))
                 .Return(
                     (nft) =>
                         new NFTWithVectorQueryResult
                         {
                             Address = nft.As<NFTNode>().Address,
-                            Vector = nft.As<NFTNode>().NFTVector!
+                            Vector = nft.As<NFTNode>().NFTVector
                         }
                 )
                 .ResultsAsync;
