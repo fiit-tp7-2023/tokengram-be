@@ -8,13 +8,22 @@ namespace Tokengram.Models.DTOS.HTTP.Requests.Validators
     {
         public UserUpdateRequestDTOValidator()
         {
-            RuleFor(x => x.Username)
-                .Length(ProfileSettings.MIN_USERNAME_LENGTH, ProfileSettings.MAX_USERNAME_LENGTH)
-                .When(s => s.Username != null);
+            When(
+                x => x.Username != null,
+                () =>
+                {
+                    RuleFor(x => x.Username)
+                        .Length(ProfileSettings.MIN_USERNAME_LENGTH, ProfileSettings.MAX_USERNAME_LENGTH);
+                }
+            );
 
-            RuleFor(x => x.ProfilePicture!)
-                .SetValidator(new ProfilePictureFileValidator())
-                .When(x => x.ProfilePicture != null);
+            When(
+                x => x.ProfilePicture != null,
+                () =>
+                {
+                    RuleFor(x => x.ProfilePicture!).SetValidator(new ProfilePictureFileValidator());
+                }
+            );
         }
     }
 
