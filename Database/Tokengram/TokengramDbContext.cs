@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Tokengram.Database.Tokengram.Entities;
 using Tokengram.Constants;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Tokengram.Database.Tokengram
 {
@@ -57,7 +58,10 @@ namespace Tokengram.Database.Tokengram
             {
                 e.ToTable("users");
 
-                e.Property(x => x.Address).HasColumnName("address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.Address)
+                    .HasColumnName("address")
+                    .HasMaxLength(ADDRESS_MAX_LENGTH)
+                    .HasConversion(new ValueConverter<string, string>(v => v.ToLower(), v => v));
                 e.Property(x => x.Username)
                     .HasColumnName("username")
                     .HasMaxLength(USERNAME_MAX_LENGTH)
@@ -140,7 +144,11 @@ namespace Tokengram.Database.Tokengram
                 e.ToTable("refresh_tokens");
 
                 e.Property(x => x.Id).HasColumnName("id").UseIdentityAlwaysColumn();
-                e.Property(x => x.UserAddress).HasColumnName("user_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.UserAddress)
+                    .HasColumnName("user_address")
+                    .HasMaxLength(ADDRESS_MAX_LENGTH)
+                    .HasConversion(new ValueConverter<string, string>(v => v.ToLower(), v => v));
+                ;
                 e.Property(x => x.Token).HasColumnName("token").HasMaxLength(88);
                 e.Property(x => x.ExpiresAt).HasColumnName("expires_at");
                 e.Property(x => x.BlackListedAt).HasColumnName("blacklisted_at").IsRequired(false);
@@ -161,7 +169,11 @@ namespace Tokengram.Database.Tokengram
 
                 e.Property(x => x.Id).HasColumnName("id").UseIdentityAlwaysColumn();
                 e.Property(x => x.Name).HasColumnName("name").HasMaxLength(30).IsRequired(false);
-                e.Property(x => x.AdminAddress).HasColumnName("admin_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.AdminAddress)
+                    .HasColumnName("admin_address")
+                    .HasMaxLength(ADDRESS_MAX_LENGTH)
+                    .HasConversion(new ValueConverter<string, string>(v => v.ToLower(), v => v));
+                ;
                 e.Property(x => x.Type).HasColumnName("type");
 
                 e.HasKey(x => x.Id);
@@ -199,11 +211,17 @@ namespace Tokengram.Database.Tokengram
                 e.ToTable("chat_invitations");
 
                 e.Property(x => x.ChatId).HasColumnName("chat_id");
-                e.Property(x => x.UserAddress).HasColumnName("user_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.UserAddress)
+                    .HasColumnName("user_address")
+                    .HasMaxLength(ADDRESS_MAX_LENGTH)
+                    .HasConversion(new ValueConverter<string, string>(v => v.ToLower(), v => v));
+                ;
                 e.Property(x => x.SenderAddress)
                     .HasColumnName("sender_address")
                     .HasMaxLength(ADDRESS_MAX_LENGTH)
-                    .IsRequired(false);
+                    .IsRequired(false)
+                    .HasConversion(new ValueConverter<string?, string?>(v => v != null ? v.ToLower() : null, v => v));
+                ;
                 e.Property(x => x.JoinedAt).HasColumnName("joined_at");
 
                 e.HasKey(x => new { x.ChatId, x.UserAddress });
@@ -219,7 +237,11 @@ namespace Tokengram.Database.Tokengram
 
                 e.Property(x => x.Id).HasColumnName("id").UseIdentityAlwaysColumn();
                 e.Property(x => x.Content).HasColumnName("content").HasMaxLength(1000);
-                e.Property(x => x.SenderAddress).HasColumnName("sender_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.SenderAddress)
+                    .HasColumnName("sender_address")
+                    .HasMaxLength(ADDRESS_MAX_LENGTH)
+                    .HasConversion(new ValueConverter<string, string>(v => v.ToLower(), v => v));
+                ;
                 e.Property(x => x.ChatId).HasColumnName("chat_id");
                 e.Property(x => x.ParentMessageId).HasColumnName("parent_message_id").IsRequired(false);
 
@@ -247,7 +269,11 @@ namespace Tokengram.Database.Tokengram
             {
                 e.ToTable("posts");
 
-                e.Property(x => x.NFTAddress).HasColumnName("nft_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.NFTAddress)
+                    .HasColumnName("nft_address")
+                    .HasMaxLength(ADDRESS_MAX_LENGTH)
+                    .HasConversion(new ValueConverter<string, string>(v => v.ToLower(), v => v));
+                ;
 
                 e.HasKey(x => x.NFTAddress);
 
@@ -270,8 +296,16 @@ namespace Tokengram.Database.Tokengram
                 e.ToTable("comments");
 
                 e.Property(x => x.Id).HasColumnName("id").UseIdentityAlwaysColumn();
-                e.Property(x => x.CommenterAddress).HasColumnName("commenter_address").HasMaxLength(ADDRESS_MAX_LENGTH);
-                e.Property(x => x.PostNFTAddress).HasColumnName("post_nft_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.CommenterAddress)
+                    .HasColumnName("commenter_address")
+                    .HasMaxLength(ADDRESS_MAX_LENGTH)
+                    .HasConversion(new ValueConverter<string, string>(v => v.ToLower(), v => v));
+                ;
+                e.Property(x => x.PostNFTAddress)
+                    .HasColumnName("post_nft_address")
+                    .HasMaxLength(ADDRESS_MAX_LENGTH)
+                    .HasConversion(new ValueConverter<string, string>(v => v.ToLower(), v => v));
+                ;
                 e.Property(x => x.ParentCommentId).HasColumnName("parent_comment_id");
                 e.Property(x => x.Content).HasColumnName("content").HasMaxLength(500);
 
@@ -303,8 +337,16 @@ namespace Tokengram.Database.Tokengram
             {
                 e.ToTable("post_likes");
 
-                e.Property(x => x.LikerAddress).HasColumnName("liker_address").HasMaxLength(ADDRESS_MAX_LENGTH);
-                e.Property(x => x.PostNFTAddress).HasColumnName("post_nft_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.LikerAddress)
+                    .HasColumnName("liker_address")
+                    .HasMaxLength(ADDRESS_MAX_LENGTH)
+                    .HasConversion(new ValueConverter<string, string>(v => v.ToLower(), v => v));
+                ;
+                e.Property(x => x.PostNFTAddress)
+                    .HasColumnName("post_nft_address")
+                    .HasMaxLength(ADDRESS_MAX_LENGTH)
+                    .HasConversion(new ValueConverter<string, string>(v => v.ToLower(), v => v));
+                ;
 
                 e.HasKey(x => new { x.LikerAddress, x.PostNFTAddress });
 
@@ -322,7 +364,11 @@ namespace Tokengram.Database.Tokengram
             {
                 e.ToTable("comment_likes");
 
-                e.Property(x => x.LikerAddress).HasColumnName("liker_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.LikerAddress)
+                    .HasColumnName("liker_address")
+                    .HasMaxLength(ADDRESS_MAX_LENGTH)
+                    .HasConversion(new ValueConverter<string, string>(v => v.ToLower(), v => v));
+                ;
                 e.Property(x => x.CommentId).HasColumnName("comment_id");
 
                 e.HasKey(x => new { x.LikerAddress, x.CommentId });
@@ -342,8 +388,16 @@ namespace Tokengram.Database.Tokengram
                 e.ToTable("post_user_settings");
 
                 e.Property(x => x.Id).HasColumnName("id").UseIdentityAlwaysColumn();
-                e.Property(x => x.PostNFTAddress).HasColumnName("post_nft_address").HasMaxLength(ADDRESS_MAX_LENGTH);
-                e.Property(x => x.UserAddress).HasColumnName("user_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.PostNFTAddress)
+                    .HasColumnName("post_nft_address")
+                    .HasMaxLength(ADDRESS_MAX_LENGTH)
+                    .HasConversion(new ValueConverter<string, string>(v => v.ToLower(), v => v));
+                ;
+                e.Property(x => x.UserAddress)
+                    .HasColumnName("user_address")
+                    .HasMaxLength(ADDRESS_MAX_LENGTH)
+                    .HasConversion(new ValueConverter<string, string>(v => v.ToLower(), v => v));
+                ;
                 e.Property(x => x.IsVisible).HasColumnName("is_visible").HasDefaultValue(false);
                 e.Property(x => x.Description).HasColumnName("description").HasMaxLength(500).IsRequired(false);
 
@@ -363,10 +417,16 @@ namespace Tokengram.Database.Tokengram
             {
                 e.ToTable("user_follows");
 
-                e.Property(x => x.FollowerAddress).HasColumnName("follower_address").HasMaxLength(ADDRESS_MAX_LENGTH);
+                e.Property(x => x.FollowerAddress)
+                    .HasColumnName("follower_address")
+                    .HasMaxLength(ADDRESS_MAX_LENGTH)
+                    .HasConversion(new ValueConverter<string, string>(v => v.ToLower(), v => v));
+                ;
                 e.Property(x => x.FollowedUserAddress)
                     .HasColumnName("followed_user_address")
-                    .HasMaxLength(ADDRESS_MAX_LENGTH);
+                    .HasMaxLength(ADDRESS_MAX_LENGTH)
+                    .HasConversion(new ValueConverter<string, string>(v => v.ToLower(), v => v));
+                ;
 
                 e.HasKey(x => new { x.FollowerAddress, x.FollowedUserAddress });
 
