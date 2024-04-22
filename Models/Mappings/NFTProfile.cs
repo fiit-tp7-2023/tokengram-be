@@ -20,6 +20,7 @@ namespace Tokengram.Models.Mappings
                 .ForMember(dest => dest.CreatedAtBlock, opt => opt.MapFrom(src => src.NFT.CreatedAtBlock))
                 .ForMember(dest => dest.TokenId, opt => opt.MapFrom(src => src.NFT.TokenId))
                 .ForMember(dest => dest.Raw, opt => opt.MapFrom(src => src.NFT.Raw))
+                .ForMember(dest => dest.NFTVector, opt => opt.MapFrom(src => src.NFT.NFTVector))
                 .ForMember(
                     dest => dest.Tags,
                     opt =>
