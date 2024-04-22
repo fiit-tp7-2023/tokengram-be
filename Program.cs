@@ -78,6 +78,7 @@ namespace Tokengram
                         cfg.AddProfile(new NFTProfile());
                         cfg.AddProfile(new CommentProfile());
                         cfg.AddProfile(new CommentLikeProfile());
+                        cfg.AddProfile(new PostProfile());
                         cfg.AddProfile(new PostLikeProfile());
                         cfg.AddProfile(new UserFollowProfile());
                     }).CreateMapper()
