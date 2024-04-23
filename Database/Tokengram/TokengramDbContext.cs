@@ -9,6 +9,7 @@ namespace Tokengram.Database.Tokengram
     {
         const int ADDRESS_MAX_LENGTH = ProfileSettings.MAX_ADDRESS_LENGTH;
         const int USERNAME_MAX_LENGTH = ProfileSettings.MAX_USERNAME_LENGTH;
+        const int ADDRESS_WITH_SUFFIX_MAX_LENGTH = ProfileSettings.MAX_ADDRESS_LENGTH + 20;
 
         public TokengramDbContext(DbContextOptions<TokengramDbContext> options)
             : base(options) { }
@@ -271,7 +272,7 @@ namespace Tokengram.Database.Tokengram
 
                 e.Property(x => x.NFTAddress)
                     .HasColumnName("nft_address")
-                    .HasMaxLength(ADDRESS_MAX_LENGTH)
+                    .HasMaxLength(ADDRESS_WITH_SUFFIX_MAX_LENGTH)
                     .HasConversion(new ValueConverter<string, string>(v => v.ToLower(), v => v));
                 ;
 
@@ -303,7 +304,7 @@ namespace Tokengram.Database.Tokengram
                 ;
                 e.Property(x => x.PostNFTAddress)
                     .HasColumnName("post_nft_address")
-                    .HasMaxLength(ADDRESS_MAX_LENGTH)
+                    .HasMaxLength(ADDRESS_WITH_SUFFIX_MAX_LENGTH)
                     .HasConversion(new ValueConverter<string, string>(v => v.ToLower(), v => v));
                 ;
                 e.Property(x => x.ParentCommentId).HasColumnName("parent_comment_id");
@@ -344,7 +345,7 @@ namespace Tokengram.Database.Tokengram
                 ;
                 e.Property(x => x.PostNFTAddress)
                     .HasColumnName("post_nft_address")
-                    .HasMaxLength(ADDRESS_MAX_LENGTH)
+                    .HasMaxLength(ADDRESS_WITH_SUFFIX_MAX_LENGTH)
                     .HasConversion(new ValueConverter<string, string>(v => v.ToLower(), v => v));
                 ;
 
@@ -390,7 +391,7 @@ namespace Tokengram.Database.Tokengram
                 e.Property(x => x.Id).HasColumnName("id").UseIdentityAlwaysColumn();
                 e.Property(x => x.PostNFTAddress)
                     .HasColumnName("post_nft_address")
-                    .HasMaxLength(ADDRESS_MAX_LENGTH)
+                    .HasMaxLength(ADDRESS_WITH_SUFFIX_MAX_LENGTH)
                     .HasConversion(new ValueConverter<string, string>(v => v.ToLower(), v => v));
                 ;
                 e.Property(x => x.UserAddress)
