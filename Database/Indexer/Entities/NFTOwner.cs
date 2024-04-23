@@ -10,6 +10,8 @@ namespace Tokengram.Database.Indexer.Entities
 
         public long Amount { get; set; }
 
-        public DateTime AcquiredAt { get; set; }
+        public int AcquiredAt { get; set; }
+
+        public int AcquiredAtBlock { get; set; }
     }
 }
