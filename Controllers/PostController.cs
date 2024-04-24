@@ -46,7 +46,6 @@ namespace Tokengram.Controllers
             return Ok(_mapper.Map<IEnumerable<PostResponseDTO>>(result));
         }
 
-        [Authorize]
         [HttpGet("user/{userAddress}")]
         [BindUser]
         public async Task<ActionResult<IEnumerable<PostResponseDTO>>> GetUserPosts(
