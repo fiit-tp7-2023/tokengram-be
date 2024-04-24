@@ -65,7 +65,7 @@ namespace Tokengram.Services
 
             var totalSum = updatedVector.Values.Sum(); // Total sum of values in the vector
             var maxVectorSum = 100; // Maximum sum of the vector
-            var maxWeight = maxVectorSum / Math.Max(updatedVector.Count, 0); // Maximum weight for each tag
+            var maxWeight = maxVectorSum / Math.Max(updatedVector.Count, 1); // Maximum weight for each tag
 
             // Update vector based on nftVector and actionCoefficient
             foreach (var tagWeight in CosineSimilarityUtil.ParseVectorString(nftVector))
