@@ -24,6 +24,6 @@ namespace Tokengram.Services.Interfaces
 
         Task<IEnumerable<PostLike>> GetPostLikes(PaginationRequestDTO request, Post post);
 
-        Task<IEnumerable<PostWithUserContext>> GetHotPosts(User user, PaginationRequestDTO request);
+        Task<IEnumerable<PostWithUserContext>> GetHotPosts(User? user, PaginationRequestDTO request);
     }
 }

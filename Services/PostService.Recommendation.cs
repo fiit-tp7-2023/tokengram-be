@@ -13,10 +13,11 @@ namespace Tokengram.Services
     {
         private const int RANDOM_POSTS_SUBSET_COUNT = 1000;
 
-        public async Task<IEnumerable<PostWithUserContext>> GetHotPosts(User user, PaginationRequestDTO request)
+        public async Task<IEnumerable<PostWithUserContext>> GetHotPosts(User? user, PaginationRequestDTO request)
         {
             // random subset of visible posts (according to last owner)
-            List<PostRecommendationView> posts = (await GetRandomPostsSubset()).ToList();
+            List<PostRecommendationView> posts = user == null ?
+                (await GetNewestPostsSubset()).ToList() : (await GetRandomPostsSubset()).ToList();
 
             // nfts with vectors
             IEnumerable<NFTWithVectorQueryResult> nftsWithVectors = await _nftService.FillNFTsWithVector(
@@ -30,10 +31,13 @@ namespace Tokengram.Services
                 post.NFTVector = nftVector ?? string.Empty;
             }
 
-            // calculate similarity and order
-            posts = CalculateCosineSimilarity(posts, user.UserVector)
-                .OrderByDescending(x => x.CosineSimilarity)
-                .ToList();
+            if (user != null)
+            {
+                // calculate similarity and order
+                posts = CalculateCosineSimilarity(posts, user.UserVector)
+                    .OrderByDescending(x => x.CosineSimilarity)
+                    .ToList();
+            }
 
             // fetch current owners
             IEnumerable<NFTOwner> nftOwners = await _nftService.GetNFTOwners(posts.Select(x => x.NFTAddress));
@@ -78,6 +82,24 @@ namespace Tokengram.Services
                 .Include(x => x.PostUserSettings)
                 .Where(x => x.PostUserSettings.IsVisible)
                 .OrderBy(x => Guid.NewGuid())
+                .Take(RANDOM_POSTS_SUBSET_COUNT)
+                .Select(
+                    x =>
+                        new PostRecommendationView
+                        {
+                            NFTAddress = x.NFTAddress,
+                            OwnerAddress = x.PostUserSettings.UserAddress
+                        }
+                )
+                .ToListAsync();
+        }
+
+        private async Task<IEnumerable<PostRecommendationView>> GetNewestPostsSubset()
+        {
+            return await _tokengramDbContext.Posts
+                .Include(x => x.PostUserSettings)
+                .Where(x => x.PostUserSettings.IsVisible)
+                .OrderByDescending(x => x.PostUserSettings.CreatedAt)
                 .Take(RANDOM_POSTS_SUBSET_COUNT)
                 .Select(
                     x =>
