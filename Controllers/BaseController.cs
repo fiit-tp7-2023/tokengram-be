@@ -10,5 +10,11 @@ namespace Tokengram.Controllers
         {
             return User.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value;
         }
+
+        [NonAction]
+        protected bool IsUserLoggedIn()
+        {
+            return User.Claims.Any(x => x.Type == ClaimTypes.NameIdentifier);
+        }
     }
 }
