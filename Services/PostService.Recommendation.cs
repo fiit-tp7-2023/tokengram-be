@@ -65,7 +65,7 @@ namespace Tokengram.Services
                             Post = x,
                             CommentCount = x.Comments.Count,
                             LikeCount = x.Likes.Count,
-                            IsLiked = x.Likes.Any(x => x.LikerAddress == user.Address),
+                            IsLiked = user == null ? false : x.Likes.Any(x => x.LikerAddress == user.Address),
                             OwnerAddress = x.PostUserSettings.UserAddress
                         }
                 )
