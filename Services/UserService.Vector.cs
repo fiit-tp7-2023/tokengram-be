@@ -65,7 +65,7 @@ namespace Tokengram.Services
 
             var totalSum = updatedVector.Values.Sum(); // Total sum of values in the vector
             var maxVectorSum = 100; // Maximum sum of the vector
-            var maxWeight = maxVectorSum / updatedVector.Count; // Maximum weight for each tag
+            var maxWeight = maxVectorSum / Math.Max(updatedVector.Count, 0); // Maximum weight for each tag
 
             // Update vector based on nftVector and actionCoefficient
             foreach (var tagWeight in CosineSimilarityUtil.ParseVectorString(nftVector))
@@ -84,7 +84,7 @@ namespace Tokengram.Services
             }
 
             // Normalize the vector based on the maximum sum
-            var currentSum = updatedVector.Values.Sum();
+            var currentSum = Math.Max(updatedVector.Values.Sum(), 1);
             var factor = currentSum > maxVectorSum ? maxVectorSum / (double)currentSum : 1;
 
             var keysToDelete = updatedVector.Where(kv => kv.Value < 0.50).Select(kv => kv.Key).ToList();
