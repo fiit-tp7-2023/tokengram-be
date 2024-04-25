@@ -155,8 +155,7 @@ namespace Tokengram.Services
         private async Task<PostWithUserContext> FillPostWithNFT(PostWithUserContext post)
         {
             NFTQueryResult nftQueryResult = await _nftService.GetNFT(post.Post.NFTAddress);
-            if (nftQueryResult != null)
-                post.Post.NFTQueryResult = nftQueryResult;
+            post.Post.NFTQueryResult = nftQueryResult;
 
             return post;
         }
