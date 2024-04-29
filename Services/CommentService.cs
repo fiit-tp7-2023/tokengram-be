@@ -41,7 +41,7 @@ namespace Tokengram.Services
                         }
                 )
                 .OrderByDescending(x => x.LikeCount)
-                .ThenBy(x => x.Comment.CreatedAt)
+                .ThenByDescending(x => x.Comment.CreatedAt)
                 .Paginate(request.PageNumber, request.PageSize)
                 .ToListAsync();
 
@@ -57,7 +57,7 @@ namespace Tokengram.Services
             IEnumerable<CommentWithUserContext> comments = await _tokengramDbContext.Comments
                 .Include(x => x.Commenter)
                 .Where(x => x.ParentCommentId == comment.Id)
-                .OrderBy(x => x.CreatedAt)
+                .OrderByDescending(x => x.CreatedAt)
                 .Paginate(request.PageNumber, request.PageSize)
                 .Select(
                     x =>
