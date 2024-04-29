@@ -44,7 +44,7 @@ namespace Tokengram.Controllers
             [FromQuery] PaginationRequestDTO request
         )
         {
-            Comment comment = (HttpContext.Items["ValidatedComment"] as Comment)!;
+            Comment comment = (HttpContext.Items["comment"] as Comment)!;
 
             var result = await _commentService.GetCommentReplies(request, comment, GetUserAddress());
 
@@ -59,7 +59,7 @@ namespace Tokengram.Controllers
             CommentUpdateRequestDTO request
         )
         {
-            Comment comment = (HttpContext.Items["ValidatedComment"] as Comment)!;
+            Comment comment = (HttpContext.Items["comment"] as Comment)!;
 
             var result = await _commentService.UpdateComment(request, comment, GetUserAddress());
 
@@ -70,7 +70,7 @@ namespace Tokengram.Controllers
         [BindComment]
         public async Task<ActionResult> DeleteComment(string postNFTAddress, long commentId)
         {
-            Comment comment = (HttpContext.Items["ValidatedComment"] as Comment)!;
+            Comment comment = (HttpContext.Items["comment"] as Comment)!;
 
             await _commentService.DeleteComment(comment, GetUserAddress());
 
@@ -85,7 +85,7 @@ namespace Tokengram.Controllers
             [FromQuery] PaginationRequestDTO request
         )
         {
-            Comment comment = (HttpContext.Items["ValidatedComment"] as Comment)!;
+            Comment comment = (HttpContext.Items["comment"] as Comment)!;
 
             var result = await _commentService.GetCommentLikes(request, comment);
 
@@ -96,7 +96,7 @@ namespace Tokengram.Controllers
         [BindComment]
         public async Task<ActionResult<CommentLikeResponseDTO>> LikeComment(string postNFTAddress, long commentId)
         {
-            Comment comment = (HttpContext.Items["ValidatedComment"] as Comment)!;
+            Comment comment = (HttpContext.Items["comment"] as Comment)!;
 
             var result = await _commentService.LikeComment(comment, GetUserAddress());
 
@@ -107,7 +107,7 @@ namespace Tokengram.Controllers
         [BindComment]
         public async Task<ActionResult> UnlikeComment(string postNFTAddress, long commentId)
         {
-            Comment comment = (HttpContext.Items["ValidatedComment"] as Comment)!;
+            Comment comment = (HttpContext.Items["comment"] as Comment)!;
 
             await _commentService.UnlikeComment(comment, GetUserAddress());
 
